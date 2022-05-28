@@ -1,0 +1,69 @@
+{% extends 'base/layout.html' %}
+{% block body %}
+
+<h3> Welcome to Our Hosting Service! </h3>
+
+<div id="create-application">
+    <h4> Create an Application </h4>
+    <form id="create-application-form">
+        <div class="form-group">
+            <label for="app_name"> Enter the Application Name </label>
+            <input name="app_name" id="app_name" required>
+        </div>
+        <div class="form-group">
+            <label for="docker_image"> Enter the Docker Hub link </label>
+            <input name="docker_image" id="docker_image" required>
+        </div>
+        <div class="form-group">
+            <button type="submit"> Create </button>
+        </div>
+    </form>
+</div>
+
+
+<h4> Our currently hosted websites </h4>
+
+<table>
+    <thead>
+        <td> app_name </td>
+        <td> docker_image </td>
+        <td> provisioned </td>
+        <td> provisioning </td>
+
+    </thead>
+    <tbody>
+        {% for app_name in WORKING_APPLICATIONS %}
+        <tr>
+            <td> {{ app_name }} </td>
+            <td> {{ WORKING_APPLICATIONS[app_name].docker_image }} </td>
+            <td> {{ WORKING_APPLICATIONS[app_name].provisioned }} </td>
+            <td> {{ WORKING_APPLICATIONS[app_name].provisioning }} </td> 
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+    document.getElementById("create-application-form").onsubmit = function (e) {
+        e.preventDefault();
+
+        const app_name = document.getElementById("app_name").value;
+        const docker_image = document.getElementById("docker_image").value;
+
+        fetch(`/create_application?app_name=${app_name}&docker_image=${docker_image}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+
+                location.reload();
+            }).catch(err => {
+                alert("Something went wrong" + err);
+            });
+    }
+</script>
+
+{% endblock %}
