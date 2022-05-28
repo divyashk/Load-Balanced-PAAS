@@ -1,0 +1,77 @@
+{% extends 'base/layout.html' %}
+{% block body %}
+
+<h3> Register Page! </h3>
+
+<div id="login-user">
+    <h4> User Login </h4>
+    <form id="login-user-form">
+        <div class="form-group">
+            <label for="user_id"> Enter your user Id </label>
+            <input name="user_id" id="user_id" required>
+        </div>
+        <div class="form-group">
+            <label for="user_password"> Enter your password </label>
+            <input name="user_password" id="user_password" type="password" required>
+        </div>
+        <div class="form-group">
+            <button type="submit"> Login </button>
+        </div>
+    </form>
+
+    <br>
+    <div class="goto-register-page">
+        <a href="/register"> New User? </a>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+    document.getElementById("login-user-form").onsubmit = function (e) {
+        e.preventDefault();
+
+        const user_id = document.getElementById("user_id").value;
+        const user_password = document.getElementById("user_password").value;
+
+        async function postData(url = '', data = {}) {
+            // Default options are marked with *
+            const response = await fetch(url, {
+                method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, *cors, same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify(data) // body data type must match "Content-Type" header
+            });
+            return response.json(); // parses JSON response into native JavaScript objects
+        }
+
+        const postBody = {
+            user_id,
+            user_password
+        }
+
+        postData(`/login`, postBody)
+            .then(data => {
+                console.log(data);
+
+                if (data.success) {
+                    window.location.href = "/";
+                } else {
+                    alert(data.error);
+                }
+            }).catch(err => {
+                alert("Something went wrong" + err);
+            });
+    }
+</script>
+
+{% endblock %}

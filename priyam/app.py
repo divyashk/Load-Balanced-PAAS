@@ -1,11 +1,15 @@
+from crypt import methods
 from time import sleep
-from flask import Flask, jsonify, request, render_template
+from flask import Flask, jsonify, request, render_template, session, redirect
 import os
 import requests
 import multiprocessing
+from tinydb import TinyDB, Query
+from tinydb.table import Document
 
 app = Flask(__name__)
-
+app.secret_key = "WhatAGoodCourseIsIt"
+db = TinyDB('db.json')
 manager = multiprocessing.Manager()
 
 # stores the list of applications that are currently working and the values stored by them
@@ -37,14 +41,16 @@ def test_application(application_url):
     return True
 
 
-def create_docker_container(docker_image):
+def create_docker_container(app_name, docker_image):
     '''
     Takes a docker image as input and creates a container based on that
     @params: docker image
     @returns: tuple(success_status, application_url_or_error)
     '''
 
-    return True, "docker_id"
+    # For testing right now creating a new python server file
+    #TODO
+    return True, "app_url"
 
 
 def create_application(app_name, docker_image):
@@ -80,10 +86,17 @@ def create_application(app_name, docker_image):
         print("Child process for app_name", app_name ," and id is : ", os.getpid())
 
         # TODO write the provisioning code here using the docker_image, also add the url for it
-        sleep(5)
+        
+        success_status, app_url_or_error = create_docker_container(app_name, docker_image)
         lock.acquire()
-        WORKING_APPLICATIONS[app_name]["provisioning"] = False
-        WORKING_APPLICATIONS[app_name]["provisioned"] = True
+        if success_status:
+            WORKING_APPLICATIONS[app_name]["provisioning"] = False
+            WORKING_APPLICATIONS[app_name]["provisioned"] = True
+            WORKING_APPLICATIONS[app_name]["app_url"] = app_url_or_error
+        else:
+            WORKING_APPLICATIONS[app_name]["provisioning"] = False
+            WORKING_APPLICATIONS[app_name]["provisioned"] = False
+            WORKING_APPLICATIONS[app_name]["error"] = app_url_or_error
         lock.release()
 
         print(WORKING_APPLICATIONS, "WORKING APPlictions")
@@ -110,12 +123,88 @@ def delete_application(application_id):
 
 @app.route('/')
 def index_page():
+    if "user_id" not in session:
+        return redirect("/login")
+
     global WORKING_APPLICATIONS
 
     ''' Returns the list of working applications '''
     # return jsonify(WORKING_APPLICATIONS=str(WORKING_APPLICATIONS), WORKING_WORKERS=str(WORKING_WORKERS))
     return render_template('index.html', WORKING_APPLICATIONS=WORKING_APPLICATIONS)
 
+@app.route('/login', methods=["POST", "GET"])
+def login_page():
+    if "user_id" in session:
+        return redirect("/")
+
+    if request.method == "POST":
+        request_body = request.json
+
+        user_data = {}
+        req_fields = ["user_password", "user_id"]
+        for req_field in req_fields:
+            if req_field not in request_body:
+                return jsonify(success=False, error=str(req_field) + " not provided!")
+            user_data[req_field] = request_body[req_field]
+
+        # Now check in the tinydb
+        try:
+            user_table = db.table('users')
+            User = Query()
+            user_queried_data = user_table.get(User.user_id == user_data["user_id"])
+            if user_queried_data is None:
+                return jsonify(success=False, error="UserId does not exists")
+            else:
+                # User exists
+                if user_queried_data["user_password"] == user_data["user_password"]:
+                    session["user_id"] = user_data["user_id"]
+                    session["user_name"] = user_queried_data["user_name"]
+                    session["user_type"] = "normal"
+                    return jsonify(success=True)
+                return jsonify(success=False, error="Password does not match!")
+
+        except Exception as err:
+            return jsonify(success=False, error=str(err))
+
+    return render_template('login.html')
+
+
+@app.route('/register', methods=["POST", "GET"])
+def register_page():
+    if "user_id" in session:
+        return redirect("/")
+
+    if request.method == "POST":
+        request_body = request.json
+        
+        user_data = {}
+        req_fields = ["user_name", "user_password", "user_id"]
+        for req_field in req_fields:
+            if req_field not in request_body:
+                return jsonify(success=False, error=str(req_field) + " not provided!")
+            user_data[req_field] = request_body[req_field]
+
+        # Now set the data in the tinyDB
+        try:
+            user_table = db.table('users')
+            User = Query()
+            if user_table.get(User.user_id == user_data["user_id"]) is not None:
+                return jsonify(success=False, error="Choose a different UserId")
+            user_table.insert(user_data)
+        except Exception as err:
+            return jsonify(success=False, error=str(err))
+
+        session["user_id"] = user_data["user_id"]
+        session["user_name"] = user_data["user_name"]
+        session["user_type"] = "normal"
+        return jsonify(success=True)
+
+    return render_template('register.html')
+
+@app.route('/logout')
+def logout_page():
+    session.clear()
+    return redirect('/login')
 
 @app.route('/test_application')
 def test_application_api():
