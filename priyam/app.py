@@ -13,7 +13,6 @@ db = TinyDB('db.json')
 manager = multiprocessing.Manager()
 
 # stores the list of applications that are currently working and the values stored by them
-WORKING_APPLICATIONS = manager.dict()
 lock = multiprocessing.Lock()
 
 '''
@@ -52,20 +51,37 @@ def create_docker_container(app_name, docker_image):
     #TODO
     return True, "app_url"
 
+def set_nested(path, val):
+    def transform(doc):
+        current = doc
+        for key in path[:-1]:
+            current = current[key]
+
+        current[path[-1]] = val
+
+    return transform
 
 def create_application(app_name, docker_image):
     # 1. Will Start a container from the given docker image
     # 2. Update WORKING_APPLICATIONS
     # 3. Creates a Worker
     # Returns a tuple(Success_Status, application_id or error)
-
-    global WORKING_APPLICATIONS
     global lock
 
     # Here try to create a new application from the provided docker image
     # res = requests.get("http://localhost:4999/create_application")
 
-    ''' Returns True if creation of worker proxy is successfull '''
+    lock.acquire()
+    try:
+        app_applications = db.table("app_applications")
+        query = Query()
+        if app_applications.get(query.app_name == app_name) is not None:
+            return False, "Application with this name already exists!"
+    except:
+        lock.release()
+        return False, "Could not scan applications"
+    lock.release()
+
     try:
         fork_id = os.fork()
     except:
@@ -73,10 +89,13 @@ def create_application(app_name, docker_image):
 
     if fork_id > 0:
         lock.acquire()
-        WORKING_APPLICATIONS[app_name] = manager.dict({
-            "provisioned": False,
-            "provisioning": True,
-            "docker_image": docker_image
+        app_applications = db.table("app_applications")
+        app_applications.insert({
+            "app_name": app_name,
+            "app_data": {
+                "provisioned": False,
+                "provisioning": True,
+                "docker_image": docker_image }
         })
         lock.release()
 
@@ -85,21 +104,32 @@ def create_application(app_name, docker_image):
     else:
         print("Child process for app_name", app_name ," and id is : ", os.getpid())
 
+        # TODO, ensure this code does not run first than parent, else it gives error
         # TODO write the provisioning code here using the docker_image, also add the url for it
-        
+        sleep(1)
+
         success_status, app_url_or_error = create_docker_container(app_name, docker_image)
         lock.acquire()
         if success_status:
-            WORKING_APPLICATIONS[app_name]["provisioning"] = False
-            WORKING_APPLICATIONS[app_name]["provisioned"] = True
-            WORKING_APPLICATIONS[app_name]["app_url"] = app_url_or_error
+            try:
+                app_applications = db.table("app_applications")
+                query = Query()
+                app_applications.update(set_nested(["app_data", 'provisioning'], False), query.app_name == app_name)
+                app_applications.update(set_nested(["app_data", 'provisioned'], True), query.app_name == app_name)
+                app_applications.update(set_nested(["app_data", "app_url"], app_url_or_error), query.app_name == app_name)
+            except:
+                lock.release()
         else:
-            WORKING_APPLICATIONS[app_name]["provisioning"] = False
-            WORKING_APPLICATIONS[app_name]["provisioned"] = False
-            WORKING_APPLICATIONS[app_name]["error"] = app_url_or_error
+            try:
+                app_applications = db.table("app_applications")
+                query = Query()
+                app_applications.update(set_nested(["app_data", 'provisioning'], False), query.app_name == app_name)
+                app_applications.update(set_nested(["app_data", 'provisioned'], False), query.app_name == app_name)
+                app_applications.update(set_nested(["app_data", "error"], app_url_or_error), query.app_name == app_name)
+            except:
+                lock.release()
         lock.release()
 
-        print(WORKING_APPLICATIONS, "WORKING APPlictions")
         print("Provisioned app_name", app_name ," and id is : ", os.getpid())
         exit() # End the child process here, we will contact from another API to know the status
 
@@ -109,11 +139,16 @@ def delete_application(application_id):
     # 2. Update the WORKING_APPLICATIONS
     # 3. Worker will be already deleted as it will throw
     # Returns a tuple(Success_Status, application_id or error)
-    global WORKING_APPLICATIONS
     global lock
 
     lock.acquire()
-    WORKING_APPLICATIONS.pop(application_id)
+    try:
+        app_applications = db.table("app_applications")
+        query = Query()
+        app_applications.remove(query.app_name == application_id)
+    except:
+        return False, application_id
+        lock.release()
     lock.release()
     # TODO, make an API call to resource manager to delete the application
 
@@ -126,7 +161,8 @@ def index_page():
     if "user_id" not in session:
         return redirect("/login")
 
-    global WORKING_APPLICATIONS
+    app_applications = db.table("app_applications")
+    WORKING_APPLICATIONS = app_applications.all()
 
     ''' Returns the list of working applications '''
     # return jsonify(WORKING_APPLICATIONS=str(WORKING_APPLICATIONS), WORKING_WORKERS=str(WORKING_WORKERS))

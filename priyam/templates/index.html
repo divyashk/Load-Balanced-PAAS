@@ -37,12 +37,12 @@
 
     </thead>
     <tbody>
-        {% for app_name in WORKING_APPLICATIONS %}
+        {% for app in WORKING_APPLICATIONS %}
         <tr>
-            <td> {{ app_name }} </td>
-            <td> {{ WORKING_APPLICATIONS[app_name].docker_image }} </td>
-            <td> {{ WORKING_APPLICATIONS[app_name].provisioned }} </td>
-            <td> {{ WORKING_APPLICATIONS[app_name].provisioning }} </td> 
+            <td> {{ app.app_name }} </td>
+            <td> {{ app.app_data.docker_image }} </td>
+            <td> {{ app.app_data.provisioned }} </td>
+            <td> {{ app.app_data.provisioning }} </td> 
         </tr>
         {% endfor %}
     </tbody>
