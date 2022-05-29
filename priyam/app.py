@@ -68,6 +68,9 @@ def create_application(app_name, docker_image):
     # Returns a tuple(Success_Status, application_id or error)
     global lock
 
+    if "user_id" not in session:
+        return False, "User not logged in!"
+
     # Here try to create a new application from the provided docker image
     # res = requests.get("http://localhost:4999/create_application")
 
@@ -95,7 +98,8 @@ def create_application(app_name, docker_image):
             "app_data": {
                 "provisioned": False,
                 "provisioning": True,
-                "docker_image": docker_image }
+                "docker_image": docker_image },
+            "user_id": session["user_id"]
         })
         lock.release()
 
@@ -161,12 +165,19 @@ def index_page():
     if "user_id" not in session:
         return redirect("/login")
 
-    app_applications = db.table("app_applications")
-    WORKING_APPLICATIONS = app_applications.all()
+    lock.acquire()
+    try:
+        app_applications = db.table("app_applications")
+        query = Query()
+        WORKING_APPLICATIONS = app_applications.search(query.user_id == session["user_id"])
+        lock.release()
+        ''' Returns the list of working applications '''
+        # return jsonify(WORKING_APPLICATIONS=str(WORKING_APPLICATIONS), WORKING_WORKERS=str(WORKING_WORKERS))
+        return render_template('index.html', WORKING_APPLICATIONS=WORKING_APPLICATIONS)
+    except:
+        lock.release()
+        return "Site Failure!"
 
-    ''' Returns the list of working applications '''
-    # return jsonify(WORKING_APPLICATIONS=str(WORKING_APPLICATIONS), WORKING_WORKERS=str(WORKING_WORKERS))
-    return render_template('index.html', WORKING_APPLICATIONS=WORKING_APPLICATIONS)
 
 @app.route('/login', methods=["POST", "GET"])
 def login_page():
