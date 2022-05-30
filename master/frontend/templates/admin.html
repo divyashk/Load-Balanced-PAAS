@@ -1,0 +1,56 @@
+{% extends 'base/layout.html' %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/index.css">
+<title>App Name</title>
+{% endblock %}
+{% block body %}
+
+<h3> Admin Portal! </h3>
+
+<div class="machines">
+
+    {% for machine in MACHINES %}
+    <a href="{{ machine.machine_url }}"> {{ machine.machine_url }} </a>
+    <!-- <div class="machine-block">
+        <iframe width="100%" height="600px" src="{{ machine.machine_url }}" title="{{ machine.machine_url }}">
+        </iframe>
+    </div> -->
+    {% endfor %}
+</div>
+
+<div class="websites">
+    <h4> Our currently hosted websites </h4>
+
+    <table>
+        <thead>
+            <td> app_name </td>
+            <td> docker_image </td>
+            <td> APP URL </td>
+            <td> DashBoard </td>
+            <td> user_id </td>
+            <td> provisioning </td>
+        </thead>
+        <tbody>
+            {% for app in WORKING_APPLICATIONS %}
+            <tr>
+                <td> {{ app.app_name }} </td>
+                <td> {{ app.docker_image }} </td>
+                <td> {{ app.app_url }} </td>
+                <td>
+                    <a href="{{ app.dashboard_url }}"> {{ app.dashboard_url }} </a>
+                </td>
+                <td> {{ app.user_id }} </td>
+                <td> {{ app }} </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+
+
+{% endblock %}

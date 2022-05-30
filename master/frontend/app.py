@@ -14,6 +14,9 @@ manager = multiprocessing.Manager()
 # stores the list of applications that are currently working and the values stored by them
 users_lock = multiprocessing.Lock()
 
+ADMIN_USER="admin"
+ADMIN_PASSWORD = "admin"
+
 '''
 Database schema and structure
 users.json              ->  For users management
@@ -247,6 +250,22 @@ def index_page():
     return render_template('index.html', WORKING_APPLICATIONS=WORKING_APPLICATIONS)
 
 
+@app.route('/admin')
+def admin_page():
+    if "user_id" not in session:
+        return redirect("/login")
+    
+    if session["user_id"] != "admin":
+        return jsonify(success=False, error="UnAuthorized Access")
+
+    MACHINES = [
+        {"machine_url": "http://localhost:5000"}
+    ]
+
+    app_applications = users_db.table("app_applications")
+    WORKING_APPLICATIONS = app_applications.all()
+    return render_template('admin.html', WORKING_APPLICATIONS=WORKING_APPLICATIONS, MACHINES=MACHINES)
+
 
 @app.route('/login', methods=["POST", "GET"])
 def login_page():
@@ -263,6 +282,16 @@ def login_page():
                 return jsonify(success=False, error=str(req_field) + " not provided!")
             user_data[req_field] = request_body[req_field]
 
+        
+        if user_data["user_id"] == ADMIN_USER:
+            if user_data["user_password"] != ADMIN_PASSWORD:
+                return jsonify(success=False, error="Password does not match!")
+            else:
+                session["user_id"] = user_data["user_id"]
+                session["user_name"] = "Admin"
+                session["user_type"] = "admin"
+                return jsonify(success=True, redirect="/admin")
+
         # Now check in the tinydb
         try:
             user_table = users_db.table('users')
@@ -276,7 +305,7 @@ def login_page():
                     session["user_id"] = user_data["user_id"]
                     session["user_name"] = user_queried_data["user_name"]
                     session["user_type"] = "normal"
-                    return jsonify(success=True)
+                    return jsonify(success=True, redirect="/")
                 return jsonify(success=False, error="Password does not match!")
 
         except Exception as err:

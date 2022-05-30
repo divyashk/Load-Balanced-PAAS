@@ -81,7 +81,7 @@
                 console.log(data);
 
                 if (data.success) {
-                    window.location.href = "/";
+                    window.location.href = data.redirect;
                 } else {
                     alert(data.error);
                 }
