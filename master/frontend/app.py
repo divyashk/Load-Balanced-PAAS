@@ -9,7 +9,7 @@ from tinydb import TinyDB, Query
 
 app = Flask(__name__)
 app.secret_key = "WhatAGoodCourseIsIt"
-users_db = TinyDB('users.json')
+users_db = TinyDB("databases/users.json")
 manager = multiprocessing.Manager()
 
 # stores the list of applications that are currently working and the values stored by them
@@ -85,7 +85,7 @@ def get_best_machine_choice(app_name):
     '''
     @Returns machine_url the best choice available among the all avaialable machines
     '''
-    machines_db = TinyDB("machines.json")
+    machines_db = TinyDB("databases/machines.json")
     rand_no = random.randint(1,2)
     machine_url = machines_db.get(doc_id=rand_no)["machine_url"]
 
@@ -99,7 +99,7 @@ def create_an_instance(app_name, docker_image=None):
     @returns: tuple(success_status, application_url_or_error)
     '''
 
-    app_db = TinyDB("app_" + app_name + ".json")
+    app_db = TinyDB("databases/app_" + app_name + ".json")
 
     if docker_image is None:
         # First find the docker_image stored by reading the app_"app_name".json file
@@ -212,7 +212,7 @@ def create_application(app_name, docker_image):
     app_applications.insert(app_object)
     users_lock.release()
 
-    app_db = TinyDB("app_" + str(app_name) + ".json" )
+    app_db = TinyDB("databases/app_" + str(app_name) + ".json" )
     app_db.insert(app_object)
 
     create_an_instance(app_name, docker_image=docker_image)
@@ -361,7 +361,7 @@ def logout_page():
 @app.route('/dashboard/<app_name>')
 def dashboard_app_page(app_name):
     try:
-        app_db = TinyDB("app_" + app_name + ".json")
+        app_db = TinyDB("databases/app_" + app_name + ".json")
         app_data = app_db.get(doc_id=1)
         if app is not None:
             return render_template('dashboard.html', app_data=app_data)
