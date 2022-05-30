@@ -140,22 +140,22 @@ def create_an_instance(app_name, docker_image=None):
         success_status, instance_url_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
 
         print("create instance on machine returned to here")
-        # Update the details in the database
-        app_instances.update(('provisioning', False), doc_id=instance_id)
-        if success_status:
-            app_instances.update(('provisioned', True), doc_id=instance_id)
-            app_instances.update(('instance_url', instance_url_or_error), doc_id=instance_id)
-        else:
-            app_instances.update(('provisioned', False), doc_id=instance_id)
-            app_instances.update(('error', instance_url_or_error), doc_id=instance_id)
+
+        try:
+            # Update the details in the database
+            app_instances.update({'provisioning': False}, doc_ids=[instance_id])
+            if success_status:
+                app_instances.update({'provisioned', True}, doc_ids=[instance_id])
+                app_instances.update({'instance_url', instance_url_or_error}, doc_ids=[instance_id])
+            else:
+                app_instances.update({'provisioned', False}, doc_ids=[instance_id])
+                app_instances.update({'error', instance_url_or_error}, doc_ids=[instance_id])
+        except Exception as err:
+            print("ERROR CAME", err)
 
         print("Provisioned app_name", app_name ," and id is : ", instance_id)
         exit() # End the child process here, we will contact from another API to know the status
-
-    # TODO PRANSHU AND DIVYASHEEL (TO ASK)
-    # For testing right now creating a new python server file
-    
-
+    # DONE
 
 def does_application_exists(app_name):
     # success_status, Exists_error?
@@ -369,8 +369,13 @@ def dashboard_app_page(app_name):
     try:
         app_db = TinyDB("databases/app_" + app_name + ".json")
         app_data = app_db.get(doc_id=1)
+
+        instances_table = app_db.table("instances")
+        instances_data = instances_table.all()
+        print("INSTANCES DATA", instances_data)
+
         if app is not None:
-            return render_template('dashboard.html', app_data=app_data)
+            return render_template('dashboard.html', app_data=app_data, instances_data=instances_data)
         else:
             return "No such app exists!"
     except Exception as err:
