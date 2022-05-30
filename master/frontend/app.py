@@ -15,6 +15,14 @@ manager = multiprocessing.Manager()
 users_lock = multiprocessing.Lock()
 
 '''
+Database schema and structure
+users.json              ->  For users management
+app_"app_name".json     ->  For app_details for "app_name"
+machines.json           ->  For storing the available machines right now
+ports.json              ->  For the ports that are being used and which app has which, also stores the mapping NAT
+'''
+
+'''
 Docs: Every docker_image uploaded by the user has a unique docker_image_id provided by us
 After deploying the container, and adding the image, the details of the docker will be in
 the form of docker_details : { keys : values }
@@ -40,6 +48,26 @@ def test_application(application_url):
 
     return True
 
+def create_instance_on_machine(app_name, docker_image, machine_url):
+    '''
+    The code here to create an instance on machine_url for the app_name with the docker_image link repo provided here
+    @return success_status, instance_url_or_error
+    '''
+
+    # After creating the instance of machine M1, return the port on which it is going to work and
+    # finally return the instance_url for that machine
+
+    # TODO @PRANSHU
+
+    return True, "http://localhost:5001"
+
+def get_best_machine_choice(app_name):
+    '''
+    @Returns machine_url the best choice available among the all avaialable machines
+    '''
+
+    return "192.168.137.27"
+
 
 def create_an_instance(app_name, docker_image=None):
     '''
@@ -48,63 +76,56 @@ def create_an_instance(app_name, docker_image=None):
     @returns: tuple(success_status, application_url_or_error)
     '''
 
+    app_db = TinyDB("app_" + app_name + ".json")
+
     if docker_image is None:
         # First find the docker_image stored by reading the app_"app_name".json file
-        app_db = TinyDB("app_" + app_name + ".json")
         app_data = app_db.get()
         docker_image = app_data["docker_image"]
 
-    return True, True
+    # TODO choose a machine here that will be used in our case
+    # Also have one instance id or something to identify
+
+    # Here we will choose the machine url
+    machine_url = get_best_machine_choice(app_name)
+
+    app_instances = app_db.table("instances")
+    instance_id = app_instances.insert({
+        "provisioned": False,
+        "provisioning": True,
+        "docker_image": docker_image,
+        "user_id": session["user_id"],
+        "machine_url": machine_url
+    })
+
     try:
         fork_id = os.fork()
     except:
         return False, "System Could not Process, Fork Error"
 
     if fork_id > 0:
-        users_lock.acquire()
-        app_applications = users_db.table("app_applications")
-        app_applications.insert({
-            "app_name": app_name,
-            "app_data": {
-                "provisioned": False,
-                "provisioning": True,
-                "docker_image": docker_image },
-            "user_id": session["user_id"]
-        })
-        users_lock.release()
-
-        print("Created application with new application id", app_name)
+        print("Parent process for creating instance ", app_name , " with new instance_id: ", instance_id)
         return True, app_name
     else:
-        print("Child process for app_name", app_name ," and id is : ", os.getpid())
+        print("Child process for creating instance ", app_name ," and child id is : ", os.getpid())
 
         # TODO, ensure this code does not run first than parent, else it gives error
         # TODO write the provisioning code here using the docker_image, also add the url for it
         sleep(1)
 
-        success_status, app_url_or_error = create_an_instance(app_name, docker_image)
-        users_lock.acquire()
-        if success_status:
-            try:
-                app_applications = users_db.table("app_applications")
-                query = Query()
-                app_applications.update(set_nested(["app_data", 'provisioning'], False), query.app_name == app_name)
-                app_applications.update(set_nested(["app_data", 'provisioned'], True), query.app_name == app_name)
-                app_applications.update(set_nested(["app_data", "app_url"], app_url_or_error), query.app_name == app_name)
-            except:
-                users_lock.release()
-        else:
-            try:
-                app_applications = users_db.table("app_applications")
-                query = Query()
-                app_applications.update(set_nested(["app_data", 'provisioning'], False), query.app_name == app_name)
-                app_applications.update(set_nested(["app_data", 'provisioned'], False), query.app_name == app_name)
-                app_applications.update(set_nested(["app_data", "error"], app_url_or_error), query.app_name == app_name)
-            except:
-                users_lock.release()
-        users_lock.release()
+        # tODO, create a docker image instance on machine choosen above
+        success_status, instance_url_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
 
-        print("Provisioned app_name", app_name ," and id is : ", os.getpid())
+        # Update the details in the database
+        app_instances.update(('provisioning', False), doc_id=instance_id)
+        if success_status:
+            app_instances.update(('provisioned', True), doc_id=instance_id)
+            app_instances.update(('instance_url', instance_url_or_error), doc_id=instance_id)
+        else:
+            app_instances.update(('provisioned', False), doc_id=instance_id)
+            app_instances.update(('error', instance_url_or_error), doc_id=instance_id)
+
+        print("Provisioned app_name", app_name ," and id is : ", instance_id)
         exit() # End the child process here, we will contact from another API to know the status
 
 
@@ -164,8 +185,8 @@ def create_application(app_name, docker_image):
     # Find a port that will be used by this application
 
     dashboard_url = "http://localhost:4998/dashboard/" + str(app_name)
-    app_url = str(app_name) + ".oursite.com"
     port = "Port of the hostmachine for this website"
+    app_url = str(app_name) + ".oursite.com"
 
     app_object = {
         "app_name": app_name,
