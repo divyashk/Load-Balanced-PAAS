@@ -25,6 +25,23 @@ def get_freeport():
         freeport = s.getsockname()[1]
     return freeport
 
+@app.route('/')
+def index_page():
+    return render_template("index.html")
+
+
+@app.route('/runcmd', methods=["POST"])
+def run_cmd_on_machine():
+    cmd = request.json["cmd"]
+    if cmd is None:
+        return jsonify(success=False, error="No command(cmd) provided")
+
+    output = os.popen(cmd).read()
+    print(output)
+
+    return jsonify(success=True, output=output)
+
+
 @app.route('/build-from-hub', methods=['POST'])
 def build_from_hub():
     # add current user to group docker, and also run "newgrp docker"
@@ -68,4 +85,4 @@ def build_from_zip():
     else:
         return {'success' : 'false'}
 
-app.run(port=6969)
+app.run(port=8080, host="0.0.0.0")
