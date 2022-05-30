@@ -25,6 +25,10 @@ def get_freeport():
         freeport = s.getsockname()[1]
     return freeport
 
+@app.route('/')
+def home():
+    return "hello world"
+
 @app.route('/build-from-hub', methods=['POST'])
 def build_from_hub():
     # add current user to group docker, and also run "newgrp docker"
@@ -35,7 +39,8 @@ def build_from_hub():
     container = client.containers.run(repo + ':latest' , ports = {5000 : freeport} , detach=True)
     print(container)
     print(freeport)
-    return {'success' : 'true' , 'port' : freeport}
+    return jsonify(success=True, port=freeport)
+
 
 @app.route('/build-from-zip', methods=['POST'])
 def build_from_zip():
@@ -64,8 +69,8 @@ def build_from_zip():
         container = client.containers.run(appname + ":latest", ports = {5000 : freeport} , detach=True)
         print(container.id , container.labels , container.image)
         print(client.containers.list())
-        return {'success' : 'true' , 'port' : freeport}
+        return jsonify(success=True, port=freeport)
     else:
-        return {'success' : 'false'}
+        return jsonify(success=False)
 
 app.run(port=6969)

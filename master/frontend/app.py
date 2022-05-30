@@ -1,4 +1,5 @@
 from crypt import methods
+import random
 from time import sleep
 from flask import Flask, jsonify, request, render_template, session, redirect
 import os
@@ -16,6 +17,7 @@ users_lock = multiprocessing.Lock()
 
 ADMIN_USER="admin"
 ADMIN_PASSWORD = "admin"
+MACHINES_PORT=8080
 
 '''
 Database schema and structure
@@ -62,14 +64,32 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
 
     # TODO @PRANSHU
 
-    return True, "http://localhost:5001"
+    url = machine_url + ":" + MACHINES_PORT + '/build-from-hub'
+    res = requests.post(url , data = {'repo' : "digitalocean/flask-helloworld"})
+
+    if res.ok:
+        print("App creation almost successful", app_name, machine_url)
+        success_status = res.json()["success"]
+        if success_status:
+            print("INSTANCE CREATION ON PORT", res.json()["port"])
+            return True, res.json()["port"]
+        else:
+            print("INSTANCE CREATION Failed", res.json()["port"])
+            return True, res.json()["port"]
+    else:
+        print("Request failed or something!")
+        return False, "ERROR"
+
 
 def get_best_machine_choice(app_name):
     '''
     @Returns machine_url the best choice available among the all avaialable machines
     '''
+    machines_db = TinyDB("machines.json")
+    rand_no = random.randint(1,2)
+    machine_url = machines_db.get(doc_id=rand_no)["machine_url"]
 
-    return "192.168.137.27"
+    return machine_url
 
 
 def create_an_instance(app_name, docker_image=None):
@@ -86,9 +106,8 @@ def create_an_instance(app_name, docker_image=None):
         app_data = app_db.get()
         docker_image = app_data["docker_image"]
 
-    # TODO choose a machine here that will be used in our case
-    # Also have one instance id or something to identify
 
+    # Also have one instance id or something to identify
     # Here we will choose the machine url
     machine_url = get_best_machine_choice(app_name)
 
@@ -131,21 +150,9 @@ def create_an_instance(app_name, docker_image=None):
         print("Provisioned app_name", app_name ," and id is : ", instance_id)
         exit() # End the child process here, we will contact from another API to know the status
 
-
     # TODO PRANSHU AND DIVYASHEEL (TO ASK)
     # For testing right now creating a new python server file
     
-
-
-def set_nested(path, val):
-    def transform(doc):
-        current = doc
-        for key in path[:-1]:
-            current = current[key]
-
-        current[path[-1]] = val
-
-    return transform
 
 
 def does_application_exists(app_name):
@@ -416,4 +423,4 @@ def delete_application_api():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=4998)
+    app.run(debug=True, port=8000, host="0.0.0.0")
