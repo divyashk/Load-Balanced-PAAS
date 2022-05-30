@@ -104,7 +104,7 @@ def create_an_instance(app_name, docker_image=None):
 
     if docker_image is None:
         # First find the docker_image stored by reading the app_"app_name".json file
-        app_data = app_db.get() # TODO change
+        app_data = app_db.get(doc_id=1) # TODO change
         docker_image = app_data["docker_image"]
 
 
@@ -138,24 +138,35 @@ def create_an_instance(app_name, docker_image=None):
 
         # tODO, create a docker image instance on machine choosen above
         success_status, instance_url_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
-
         print("create instance on machine returned to here")
 
         try:
             # Update the details in the database
             app_instances.update({'provisioning': False}, doc_ids=[instance_id])
             if success_status:
-                app_instances.update({'provisioned', True}, doc_ids=[instance_id])
-                app_instances.update({'instance_url', instance_url_or_error}, doc_ids=[instance_id])
+                app_instances.update({'provisioned': True}, doc_ids=[instance_id])
+                instance_url_or_error = str(machine_url) + ":" + str(instance_url_or_error)
+                app_instances.update({'instance_url': instance_url_or_error}, doc_ids=[instance_id])
             else:
-                app_instances.update({'provisioned', False}, doc_ids=[instance_id])
-                app_instances.update({'error', instance_url_or_error}, doc_ids=[instance_id])
+                app_instances.update({'provisioned': False}, doc_ids=[instance_id])
+                app_instances.update({'error': instance_url_or_error}, doc_ids=[instance_id])
         except Exception as err:
             print("ERROR CAME", err)
 
         print("Provisioned app_name", app_name ," and id is : ", instance_id)
         exit() # End the child process here, we will contact from another API to know the status
     # DONE
+
+
+def delete_instance(app_name, instance_id):
+    # Deletes the app_name on the basis of instance_id
+    app_db = TinyDB("databases/app_" + app_name + ".json")
+    instance_table = app_db.table("instances")
+    print("DELETE INSTANCE ID: ", instance_id)
+    instance_table.remove(doc_ids=[int(instance_id)])
+
+    # TODO remove from the server side also
+
 
 def does_application_exists(app_name):
     # success_status, Exists_error?
@@ -374,6 +385,9 @@ def dashboard_app_page(app_name):
         instances_data = instances_table.all()
         print("INSTANCES DATA", instances_data)
 
+        for i in range(len(instances_data)):
+            instances_data[i]["instance_id"] = instances_data[i].doc_id
+
         if app is not None:
             return render_template('dashboard.html', app_data=app_data, instances_data=instances_data)
         else:
@@ -417,6 +431,32 @@ def create_application_api():
 
     return jsonify(success=False, error=application_or_error)
 
+
+@app.route('/create_instance')
+def create_instance_api():
+    if "user_id" not in session:
+        return jsonify(success=False, error="Not logged in")
+
+    if "app_name" not in request.args:
+        return jsonify(success=False, error="app_name not provided in request.args")
+    
+    create_an_instance(app_name=request.args["app_name"])
+    return redirect("/dashboard/" + str(request.args["app_name"]))
+
+
+@app.route('/delete_instance')
+def delete_an_instance_api():
+    if "user_id" not in session:
+        return jsonify(success=False, error="Not loggined!")
+
+    if "app_name" not in request.args:
+        return jsonify(success=False, error="app_name not provided in request.args")
+
+    if "instance_id" not in request.args:
+        return jsonify(success=False, error="instance_id not provided in request.args")
+
+    delete_instance(app_name=request.args["app_name"], instance_id=request.args["instance_id"])
+    return redirect("/dashboard/" + str(request.args["app_name"]))
 
 @app.route('/delete_application')
 def delete_application_api():

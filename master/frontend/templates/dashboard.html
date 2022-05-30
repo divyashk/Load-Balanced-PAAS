@@ -22,8 +22,39 @@
 </div>
 
 <h3 class="center" style="color: #fed356; margin-top: 32px;"> All Instances </h3>
-<div class="main-content">
-    {{ instances_data }}
+<div class="new-instance center">
+    <a class="btn btn-success" href="/create_instance?app_name={{ app_data.app_name }}"> Create Another Instance </a>
+</div>
+
+<div class="instances">
+    <table class="">
+        <thead>
+            <td> Instance ID </td>
+            <td> Provisioned </td>
+            <td> Provisioning </td>
+            <td> Instance URL </td>
+            <td> Machine </td>
+            <td> Delete </td>
+        </thead>
+        <tbody>
+            {% for instance in instances_data %}
+            <tr>
+                <td> {{ instance.instance_id }} </td>
+                <td> {{ instance.provisioned }} </td>
+                <td> {{ instance.provisioning }} </td>
+                <td> 
+                    <a href="{{ instance.instance_url }}"> {{ instance.instance_url }} </a>
+                </td>
+                <td>
+                    {{ instance.machine_url }}
+                </td>
+                <td> 
+                    <a style="color: rgb(236, 114, 114);" href="/delete_instance?app_name={{ app_data.app_name }}&instance_id={{ instance.instance_id }}"> Delete </button>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
 
 {% endblock %}
