@@ -1,3 +1,34 @@
-{{ app_data }}
+{% extends 'base/layout.html' %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/index.css">
+<title>App Name</title>
+{% endblock %}
+{% block body %}
 
-<a href="http://localhost:4998/delete_application?app_name={{app_data.app_name}}"> Delete App </a>
+<div class="big-content" style="display: flex; margin: 12px auto; padding: 16px;">
+    <div class="left-app-details"> 
+        {{ app_data.app_name }}
+        
+        <div>
+            docker_image : {{ app_data.docker_image }}
+        </div>
+        <div>
+            App URL: <a href="{{ app_data.app_url }}">{{ app_data.app_url }}</a>
+        </div>
+    </div>
+    <div style="margin-left: auto;">
+        <a class="btn btn-danger" style="text-decoration: none;" href="http://localhost:4998/delete_application?app_name={{app_data.app_name}}"> Delete App </a>
+    </div>
+</div>
+
+<h3 class="center" style="color: #fed356; margin-top: 32px;"> All Instances </h3>
+<div class="main-content">
+    {{ app_data }}
+</div>
+
+{% endblock %}
+
+{% block script %}
+
+
+{% endblock %}

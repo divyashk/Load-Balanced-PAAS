@@ -235,6 +235,7 @@ def delete_application(app_name):
 
     users_lock.acquire()
     try:
+        os.remove("databases/app_" + app_name + ".json")
         app_applications = users_db.table("app_applications")
         query = Query()
         app_applications.remove(query.app_name == app_name)
@@ -428,4 +429,4 @@ def delete_application_api():
 
 
 if __name__ == "__main__":
-    app.run(debug=True, port=8000, host="0.0.0.0")
+    app.run(debug=True, port=4998, host="0.0.0.0")
