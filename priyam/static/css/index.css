@@ -1,0 +1,52 @@
+.container
+{
+    margin-left: 25px;
+}
+.box
+{
+    position: relative;
+    margin-top: 20px;
+    margin-left: 30px;
+    padding-top: 10px;
+    color: black;
+}
+
+h3
+{
+    font-size: 35px;
+}
+
+h4
+{
+    font-size: 20px;
+    margin-left: 25%;
+}
+h5
+{
+    font-size: 20px;
+    margin-left: 30px;
+    padding-top: 10%;
+}
+
+.websites
+{
+    position: relative;
+    margin-top: 20%;
+}
+
+table 
+{
+    width: 100%;
+}
+  
+th 
+{
+    height: 70px;
+    border-bottom: 1px solid black;
+}
+
+td 
+{
+    text-align: center;
+    border-bottom: 1px solid black;
+}

@@ -1,0 +1,33 @@
+body
+{
+    max-width: 500px;
+    margin: auto;
+    padding-top: 60px;
+    font-family: 'Times New Roman', Times, serif;
+    background-color: lightblue;
+    background-size: 100%;
+}
+
+.container
+{
+    position: relative;
+    width: 450px;
+    height: 400px;
+    background: whitesmoke;
+    border-radius: 20px;
+    box-shadow: 0 5px 15px rgb(1, 1, 44);
+}
+
+a {
+    font-size: 20px;
+  }
+  
+  /* visited link */
+  a:visited {
+    color: blue;
+  }
+  
+  /* mouse over link */
+  a:hover {
+    color: green;
+  }

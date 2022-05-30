@@ -1,0 +1,39 @@
+body
+{
+    max-width: 500px;
+    margin: auto;
+    padding-top: 60px;
+    padding-left: 50px;
+    font-family: 'Times New Roman', Times, serif;
+    background-color: lightblue;
+    background-size: 100%;
+}
+
+.box
+{
+    position: relative;
+    margin-top: 20px;
+    margin-left: 30px;
+    padding-top: 15px;
+    color: black;
+}
+
+h1
+{
+    font-size: 70px;
+    padding-left: 30px;
+}
+
+p
+{
+    font-size: 40px;
+    padding-left: 30px;
+}
+
+h4
+{
+    font-size: 20px;
+    font-family: Verdana, Geneva, Tahoma, sans-serif;
+    margin-left: 30px;
+    padding-top: 15px;
+}

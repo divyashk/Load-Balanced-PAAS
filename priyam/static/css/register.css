@@ -1,0 +1,23 @@
+.box
+{
+    position: relative;
+    margin-top: 15px;
+    margin-left: 30px;
+    padding-top: 13px;
+    color: black;
+}
+
+h3
+{
+    font-size: 50px;
+    margin-left: 13%;
+
+}
+
+h4
+{
+    font-size: 20px;
+    margin-left: 30px;
+    margin-top: 10%;
+    padding-top: 10px;
+}

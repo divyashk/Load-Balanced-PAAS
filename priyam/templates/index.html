@@ -1,52 +1,69 @@
 {% extends 'base/layout.html' %}
+{% block css %}
+<link rel="stylesheet" href="/static/css/index.css">
+<title>App Name</title>
+{% endblock %}
 {% block body %}
 
 <h3> Welcome to Our Hosting Service! </h3>
 
 <div id="create-application">
-    <h4> Create an Application </h4>
-    <form id="create-application-form">
-        <div class="form-group">
-            <label for="app_name"> Enter the Application Name </label>
-            <input name="app_name" id="app_name" required>
+    <div class="container">
+        <h5> Create an Application </h5>
+        <form id="create-application-form">
+            <div class="box">
+                <div class="icon"><i class="fa fa-globe" aria-hidden="true"></i></div>
+                <div class="form-group">
+                    <label for="app_name"> Enter the Application Name </label>
+                    <input name="app_name" id="app_name" required>
+                </div>
+            </div>
+            <div class="box">
+                <div class="icon"><i class="fa fa-link" aria-hidden="true"></i></div>
+                <div class="form-group">
+                    <label for="docker_image"> Enter the Docker Hub link </label>
+                    <input name="docker_image" id="docker_image" required>
+                </div>
+            </div>
+            <div class="box">
+                <div class="form-group">
+                    <button type="submit"> Create </button>
+                </div>
+            </div>
+        </form>
+        <br>
+        <div class="box">
+            <div class="goto-logout-page">
+                <a href="/logout" style="text-decoration:none"> Logout </a>
+            </div>
         </div>
-        <div class="form-group">
-            <label for="docker_image"> Enter the Docker Hub link </label>
-            <input name="docker_image" id="docker_image" required>
-        </div>
-        <div class="form-group">
-            <button type="submit"> Create </button>
-        </div>
-    </form>
+    </div>
 </div>
 
-<br>
-<div class="goto-logout-page">
-    <a href="/logout"> Logout </a>
+
+<div class="websites">
+    <h4> Our currently hosted websites </h4>
+
+    <table>
+        <thead>
+            <td> app_name </td>
+            <td> docker_image </td>
+            <td> provisioned </td>
+            <td> provisioning </td>
+
+        </thead>
+        <tbody>
+            {% for app in WORKING_APPLICATIONS %}
+            <tr>
+                <td> {{ app.app_name }} </td>
+                <td> {{ app.app_data.docker_image }} </td>
+                <td> {{ app.app_data.provisioned }} </td>
+                <td> {{ app.app_data.provisioning }} </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
 </div>
-
-
-<h4> Our currently hosted websites </h4>
-
-<table>
-    <thead>
-        <td> app_name </td>
-        <td> docker_image </td>
-        <td> provisioned </td>
-        <td> provisioning </td>
-
-    </thead>
-    <tbody>
-        {% for app in WORKING_APPLICATIONS %}
-        <tr>
-            <td> {{ app.app_name }} </td>
-            <td> {{ app.app_data.docker_image }} </td>
-            <td> {{ app.app_data.provisioned }} </td>
-            <td> {{ app.app_data.provisioning }} </td> 
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
 
 {% endblock %}
 
