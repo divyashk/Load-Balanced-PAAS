@@ -5,46 +5,40 @@
 {% endblock %}
 {% block body %}
 
-<h3> Welcome to Our Hosting Service! </h3>
+<div class="main-content">
+    <h3 style="color: #fed356; margin-bottom: 20px;" class="center"> Welcome to Our Hosting Service! </h3>
 
-<div id="create-application">
-    <div class="container">
-        <h5> Create an Application </h5>
-        <form id="create-application-form">
-            <div class="box">
-                <div class="icon"><i class="fa fa-globe" aria-hidden="true"></i></div>
+    <div id="create-application">
+        <div class="container">
+            <h3 class="center" style="color: rgb(230, 230, 230);"> Create Application </h3>
+            <form id="create-application-form">
                 <div class="form-group">
                     <label for="app_name"> Enter the Application Name </label>
-                    <input name="app_name" id="app_name" required>
+                    <input class="form-control" name="app_name" id="app_name" placeholder="Application Name" required>
                 </div>
-            </div>
-            <div class="box">
-                <div class="icon"><i class="fa fa-link" aria-hidden="true"></i></div>
+
                 <div class="form-group">
-                    <label for="docker_image"> Enter the Docker Hub link </label>
-                    <input name="docker_image" id="docker_image" required>
+                    <div class="row">
+                        <label for="docker_image"> Enter the Docker Hub link <i class="fa fa-link"
+                                aria-hidden="true"></i> </label>
+                    </div>
+                    <input class="form-control" name="docker_image" id="docker_image" placeholder="Docker Hub Link"
+                        required>
                 </div>
-            </div>
-            <div class="box">
                 <div class="form-group">
-                    <button class="btn btn-success" type="submit"> Create </button>
+                    <button class="btn btn-success full-size" type="submit"> CREATE </button>
                 </div>
-            </div>
-        </form>
-        <br>
-        <div class="box">
-            <div class="goto-logout-page">
-                <a href="/logout" style="text-decoration:none"> Logout </a>
-            </div>
+            </form>
         </div>
     </div>
+
 </div>
 
 
 <div class="websites">
-    <h4> Our currently hosted websites </h4>
+    <h4> My hosted websites </h4>
 
-    <table>
+    <table class="">
         <thead>
             <td> app_name </td>
             <td> docker_image </td>

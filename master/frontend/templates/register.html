@@ -5,44 +5,44 @@
 {% endblock %}
 {% block body %}
 
-<h3> Register Page! </h3>
+<div class="main-content">
+    <div id="create-user">
+        <div class="container">
+            <h4 class="center" style="color: #fed356; margin-bottom: 20px;"> Create an user </h4>
+            <form id="create-user-form">
+                <div class="box">
+                    <div class="icon"><i class="fa fa-user-circle" aria-hidden="true"></i></div>
+                    <div class="form-group">
+                        <label for="user_name"> Enter the user Name </label>
+                        <input name="user_name" id="user_name" required>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="icon"><i class="fa fa-user-plus" aria-hidden="true"></i></div>
+                    <div class="form-group">
+                        <label for="user_id"> Choose a user Id </label>
+                        <input name="user_id" id="user_id" required>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="icon"><i class="fa fa-key" aria-hidden="true"></i></div>
+                    <div class="form-group">
+                        <label for="user_password"> Create a password </label>
+                        <input name="user_password" id="user_password" type="password" required>
+                    </div>
+                </div>
+                <div class="box">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success full-size"> Create </button>
+                    </div>
+                </div>
+            </form>
 
-<div id="create-user">
-    <div class="container">
-        <h4> Create an user </h4>
-        <form id="create-user-form">
+            <br><br>
             <div class="box">
-                <div class="icon"><i class="fa fa-user-circle" aria-hidden="true"></i></div>
-                <div class="form-group">
-                    <label for="user_name"> Enter the user Name </label>
-                    <input name="user_name" id="user_name" required>
+                <div class="goto-login-page">
+                    <a href="/login" style="text-decoration:none"> Already a User? </a>
                 </div>
-            </div>
-            <div class="box">
-                <div class="icon"><i class="fa fa-user-plus" aria-hidden="true"></i></div>
-                <div class="form-group">
-                    <label for="user_id"> Choose a user Id </label>
-                    <input name="user_id" id="user_id" required>
-                </div>
-            </div>
-            <div class="box">
-                <div class="icon"><i class="fa fa-key" aria-hidden="true"></i></div>
-                <div class="form-group">
-                    <label for="user_password"> Create a password </label>
-                    <input name="user_password" id="user_password" type="password" required>
-                </div>
-            </div>
-            <div class="box">
-                <div class="form-group">
-                    <button type="submit"> Create </button>
-                </div>
-            </div>
-        </form>
-
-        <br><br>
-        <div class="box">
-            <div class="goto-login-page">
-                <a href="/login" style="text-decoration:none"> Already a User? </a>
             </div>
         </div>
     </div>

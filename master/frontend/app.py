@@ -196,9 +196,12 @@ def create_application(app_name, docker_image):
     # First update in the database, add dashboard link and then create first instance
     # Find a port that will be used by this application
 
-    dashboard_url = "http://localhost:4998/dashboard/" + str(app_name)
+
+    #TODO @PRANSHU, DIVYASHEEL
+    dashboard_url = "/dashboard/" + str(app_name)
     port = "Port of the hostmachine for this website"
     app_url = str(app_name) + ".oursite.com"
+
 
     app_object = {
         "app_name": app_name,

@@ -5,38 +5,38 @@
 <title>Login Page</title>
 {% endblock %}
 {% block body %}
-<h1>App Name</h1>
-<p> <i>Tagline</i></p>
 
-<div id="login-user">
-    <div class="container">
-        <h4> User Login </h4>
-        <form id="login-user-form">
-            <div class="box">
-                <div class="icon"><i class="fa fa-user" aria-hidden="true"></i></div>
-                <div class="form-group">
-                    <label for="user_id"> Enter your user Id </label>
-                    <input name="user_id" id="user_id" required>
+<div class="main-content">
+    <div id="login-user">
+        <div class="container">
+            <h4> User Login </h4>
+            <form id="login-user-form">
+                <div class="box">
+                    <div class="form-group">
+                        <div class="icon"><i class="fa fa-user" aria-hidden="true"></i></div>
+                        <label for="user_id"> Enter your user Id </label>
+                        <input name="user_id" id="user_id" required>
+                    </div>
                 </div>
-            </div>
-            <div class="box">
-                <div class="icon"><i class="fa fa-key" aria-hidden="true"></i></div>
-                <div class="form-group">
-                    <label for="user_password"> Enter your password </label>
-                    <input name="user_password" id="user_password" type="password" required>
+                <div class="box">
+                    <div class="form-group">
+                        <div class="icon"><i class="fa fa-key" aria-hidden="true"></i></div>
+                        <label for="user_password"> Enter your password </label>
+                        <input name="user_password" id="user_password" type="password" required>
+                    </div>
                 </div>
-            </div>
-            <div class="box">
-                <div class="form-group">
-                    <button type="submit"> Login </button>
+                <div class="box">
+                    <div class="form-group">
+                        <button type="submit" class="btn btn-success full-size" style="margin-top: 20px;"> Login </button>
+                    </div>
                 </div>
-            </div>
-        </form>
+            </form>
 
-        <br><br>
-        <div class="box">
-            <div class="goto-register-page">
-                <a href="/register" style="text-decoration:none"> New User? </a>
+            <br><br>
+            <div class="box">
+                <h4 class="goto-register-page">
+                    <a href="/register" style="text-decoration:none; color: #6ab0f3;"> Register - New User </a>
+                </h4>
             </div>
         </div>
     </div>
