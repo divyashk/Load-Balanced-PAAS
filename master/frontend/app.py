@@ -59,26 +59,27 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
     @return success_status, instance_url_or_error
     '''
 
-    # After creating the instance of machine M1, return the port on which it is going to work and
-    # finally return the instance_url for that machine
+    print("CREATE INSTANCE ON MACHINE CALLED", app_name, docker_image, machine_url)
+    url = machine_url + ":" + str(MACHINES_PORT) + '/build-from-hub'
+    print("URL", url)
 
-    # TODO @PRANSHU
+    try:
+        res = requests.post(url , data = {'repo' : "digitalocean/flask-helloworld"})
 
-    url = machine_url + ":" + MACHINES_PORT + '/build-from-hub'
-    res = requests.post(url , data = {'repo' : "digitalocean/flask-helloworld"})
-
-    if res.ok:
-        print("App creation almost successful", app_name, machine_url)
-        success_status = res.json()["success"]
-        if success_status:
-            print("INSTANCE CREATION ON PORT", res.json()["port"])
-            return True, res.json()["port"]
+        if res.ok:
+            print("App creation almost successful", app_name, machine_url)
+            success_status = res.json()["success"]
+            if success_status:
+                print("INSTANCE CREATION ON PORT", res.json()["port"])
+                return True, res.json()["port"]
+            else:
+                print("INSTANCE CREATION Failed", res.json()["port"])
+                return True, res.json()["port"]
         else:
-            print("INSTANCE CREATION Failed", res.json()["port"])
-            return True, res.json()["port"]
-    else:
-        print("Request failed or something!")
-        return False, "ERROR"
+            print("Request failed or something!")
+            return False, "ERROR"
+    except Exception as err:
+        print("ERROR", err)
 
 
 def get_best_machine_choice(app_name):
@@ -87,7 +88,7 @@ def get_best_machine_choice(app_name):
     '''
     machines_db = TinyDB("databases/machines.json")
     rand_no = random.randint(1,2)
-    machine_url = machines_db.get(doc_id=rand_no)["machine_url"]
+    machine_url = machines_db.get(doc_id=1)["machine_url"]
 
     return machine_url
 
@@ -103,7 +104,7 @@ def create_an_instance(app_name, docker_image=None):
 
     if docker_image is None:
         # First find the docker_image stored by reading the app_"app_name".json file
-        app_data = app_db.get()
+        app_data = app_db.get() # TODO change
         docker_image = app_data["docker_image"]
 
 
@@ -138,6 +139,7 @@ def create_an_instance(app_name, docker_image=None):
         # tODO, create a docker image instance on machine choosen above
         success_status, instance_url_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
 
+        print("create instance on machine returned to here")
         # Update the details in the database
         app_instances.update(('provisioning', False), doc_id=instance_id)
         if success_status:

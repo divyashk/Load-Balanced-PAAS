@@ -1,0 +1,1 @@
+{"_default": {"1": {"app_name": "app5", "docker_image": "hello-world", "dashboard_url": "http://localhost:4998/dashboard/app5", "app_url": "app5.oursite.com", "port": "Port of the hostmachine for this website", "user_id": "seth"}}}
