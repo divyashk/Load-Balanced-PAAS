@@ -5,7 +5,6 @@ import os
 import requests
 import multiprocessing
 from tinydb import TinyDB, Query
-from tinydb.table import Document
 
 app = Flask(__name__)
 app.secret_key = "WhatAGoodCourseIsIt"
@@ -14,6 +13,8 @@ manager = multiprocessing.Manager()
 
 # stores the list of applications that are currently working and the values stored by them
 lock = multiprocessing.Lock()
+
+LOADBALANCER_URL = "http://localhost:4999"
 
 '''
 Docs: Every docker_image uploaded by the user has a unique docker_image_id provided by us
@@ -47,9 +48,13 @@ def create_docker_container(app_name, docker_image):
     @returns: tuple(success_status, application_url_or_error)
     '''
 
+    # TODO PRANSHU AND DIVYASHEEL (TO ASK)
     # For testing right now creating a new python server file
-    #TODO
-    return True, "app_url"
+    res = request.get(LOADBALANCER_URL + '/deploy_application?app_name=' + str(app_name) + '&docker_image=' + str(docker_image))
+    if res.ok:
+        return True, "loadbalancer url"
+    return False, "Request to LOADBALANCER at " + LOADBALANCER_URL + " failed!"
+
 
 def set_nested(path, val):
     def transform(doc):
@@ -60,6 +65,7 @@ def set_nested(path, val):
         current[path[-1]] = val
 
     return transform
+
 
 def create_application(app_name, docker_image):
     # 1. Will Start a container from the given docker image
@@ -154,7 +160,7 @@ def delete_application(application_id):
         return False, application_id
         lock.release()
     lock.release()
-    # TODO, make an API call to resource manager to delete the application
+    # TODO, make an API call to resource manager to delete all the instances of this app
 
     print("Removed application with application id", application_id)
     return True, application_id
