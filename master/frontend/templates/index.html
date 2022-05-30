@@ -35,17 +35,15 @@
 </div>
 
 
-<div class="websites">
+<div class="websites container">
     <h4> My hosted websites </h4>
 
-    <table class="">
+    <table class="table table-striped table-dark">
         <thead>
             <td> app_name </td>
             <td> docker_image </td>
             <td> APP URL </td>
             <td> DashBoard </td>
-            <td> provisioning </td>
-
         </thead>
         <tbody>
             {% for app in WORKING_APPLICATIONS %}
@@ -56,7 +54,6 @@
                 <td>
                     <a href="{{ app.dashboard_url }}"> {{ app.dashboard_url }} </a>
                 </td>
-                <td> {{ app }} </td>
             </tr>
             {% endfor %}
         </tbody>

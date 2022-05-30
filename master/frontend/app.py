@@ -79,7 +79,7 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
             print("Request failed or something!")
             return False, "ERROR"
     except Exception as err:
-        print("ERROR", err)
+        return False, str(err)
 
 
 def get_best_machine_choice(app_name):
