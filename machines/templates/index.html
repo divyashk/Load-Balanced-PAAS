@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>🍦terminal</title>
+    <meta name="description" content="🍦A simple and lightweight Javascript web browser terminal">
+    <meta charset="utf-8">
+    <meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="theme-color" content="#000">
+    <link rel="icon" type="image/png" href="/favicon.png">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+        }
+
+        #vanilla-terminal {
+            width: 100vw;
+            height: 100vh;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="vanilla-terminal"></div>
+    <script src="/static/vanilla-terminal.js"></script>
+    <script>
+        const term = new VanillaTerminal({
+            commands: {
+                handleCommand: (terminal) => {
+                    terminal.output('There is only one flavour for your favorite🍦and it is <b>vanilla<b>.')
+                    terminal.setPrompt('@soyjavi <small>❤️</small> <u>vanilla</u> ');
+                },
+            },
+
+            // welcome: 'Welcome...',
+            // prompt: 'soyjavi at <u>Macbook-Pro</u> ',
+            separator: '$',
+        });
+
+        term.onInput((command, parameters) => {
+            console.log('PRIYAM onInput', command, parameters);
+
+            if (command == "clear") {
+                term.clear();
+                return;
+            }
+
+            term.idle();
+
+            async function postData(url = '', data = {}) {
+                // Default options are marked with *
+                const response = await fetch(url, {
+                    method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                    mode: 'cors', // no-cors, *cors, same-origin
+                    cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                    credentials: 'same-origin', // include, *same-origin, omit
+                    headers: {
+                        'Content-Type': 'application/json'
+                        // 'Content-Type': 'application/x-www-form-urlencoded',
+                    },
+                    redirect: 'follow', // manual, *follow, error
+                    referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                    body: JSON.stringify(data) // body data type must match "Content-Type" header
+                });
+                return response.json(); // parses JSON response into native JavaScript objects
+            }
+
+            let commandString = command;
+            for(par of parameters) {
+                commandString += " " + par;
+            }
+
+            postData('/runcmd', { cmd: commandString })
+                .then(data => {
+                    const output1 = data.output;
+                    outputs = output1.split('\n')
+                    for (output of outputs) {
+                        term.output(output);
+                    }
+                }).finally(() => {
+                    term.setPrompt();
+                });
+        });
+
+
+        term.output(`Hi Priyam!`);
+        term.setPrompt(`priyam `);
+    </script>
+</body>
+
+</html>
