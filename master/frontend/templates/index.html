@@ -48,7 +48,8 @@
         <thead>
             <td> app_name </td>
             <td> docker_image </td>
-            <td> provisioned </td>
+            <td> APP URL </td>
+            <td> DashBoard </td>
             <td> provisioning </td>
 
         </thead>
@@ -56,9 +57,12 @@
             {% for app in WORKING_APPLICATIONS %}
             <tr>
                 <td> {{ app.app_name }} </td>
-                <td> {{ app.app_data.docker_image }} </td>
-                <td> {{ app.app_data.provisioned }} </td>
-                <td> {{ app.app_data.provisioning }} </td>
+                <td> {{ app.docker_image }} </td>
+                <td> {{ app.app_url }} </td>
+                <td>
+                    <a href="{{ app.dashboard_url }}"> {{ app.dashboard_url }} </a>
+                </td>
+                <td> {{ app }} </td>
             </tr>
             {% endfor %}
         </tbody>

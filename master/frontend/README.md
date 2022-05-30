@@ -6,7 +6,3 @@ enters the docker_image path and application_id.
 
 Now the things are sent to another flask proxy server that actually manages all the created applications right now.
 Delete the application, or create a new application, everything is handled by it.
-
-
-VirtualBox instance setup
-build-essential, curl, openssh-server, docker
