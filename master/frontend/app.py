@@ -20,6 +20,7 @@ ADMIN_USER="admin"
 ADMIN_PASSWORD = "admin"
 MACHINES_PORT=8080
 FRONTEND_HOST="divyasheel.com"
+HEALTH_CHECKERS_STARTED=False
 
 
 '''
@@ -59,7 +60,7 @@ def test_application(application_url):
 def create_instance_on_machine(app_name, docker_image, machine_url):
     '''
     The code here to create an instance on machine_url for the app_name with the docker_image link repo provided here
-    @return success_status, instance_url_or_error
+    @return success_status, instance_url_container_id_or_error
     '''
 
     print("CREATE INSTANCE ON MACHINE CALLED", app_name, docker_image, machine_url)
@@ -74,10 +75,10 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
             success_status = res.json()["success"]
             if success_status:
                 print("INSTANCE CREATION ON PORT", res.json()["port"])
-                return True, res.json()["port"]
+                return True, {"port": res.json()["port"], "container_id": res.json()["container_id"]}
             else:
                 print("INSTANCE CREATION Failed", res.json()["port"])
-                return True, res.json()["port"]
+                return True, {"port": res.json()["port"], "container_id": res.json()["container_id"]}
         else:
             print("Request failed or something!")
             return False, "ERROR"
@@ -90,10 +91,20 @@ def get_best_machine_choice(app_name):
     @Returns machine_url the best choice available among the all avaialable machines
     '''
     machines_db = TinyDB("databases/machines.json")
-    rand_no = random.randint(1,2)
-    machine_url = machines_db.get(doc_id=rand_no)["machine_url"]
 
-    return machine_url
+    # Logic to find the best machine choice
+    # NEED to update if we use more than 2
+
+    app_db = TinyDB("databases/app_" + app_name + ".json")
+    app_table = app_db.table("instances")
+    instances = app_table.all()
+    if len(instances) == 0:
+        return machines_db.get(doc_id=1)["machine_url"]
+    elif len(instances) == 1:
+        return machines_db.get(doc_id=2)["machine_url"]
+    else:
+        rand_no = random.randint(1,2)
+        return machines_db.get(doc_id=rand_no)["machine_url"]
 
 
 def create_an_instance(app_name, docker_image=None):
@@ -140,7 +151,7 @@ def create_an_instance(app_name, docker_image=None):
         sleep(1)
 
         # tODO, create a docker image instance on machine choosen above
-        success_status, instance_url_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
+        success_status, instance_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
         print("create instance on machine returned to here")
 
         try:
@@ -148,11 +159,12 @@ def create_an_instance(app_name, docker_image=None):
             app_instances.update({'provisioning': False}, doc_ids=[instance_id])
             if success_status:
                 app_instances.update({'provisioned': True}, doc_ids=[instance_id])
-                instance_url_or_error = str(machine_url) + ":" + str(instance_url_or_error)
-                app_instances.update({'instance_url': instance_url_or_error}, doc_ids=[instance_id])
+                instance_url = str(machine_url) + ":" + str(instance_or_error["port"])
+                app_instances.update({'instance_url': instance_url}, doc_ids=[instance_id])
+                app_instances.update({'container_id': instance_or_error["container_id"]}, doc_ids=[instance_id])
             else:
                 app_instances.update({'provisioned': False}, doc_ids=[instance_id])
-                app_instances.update({'error': instance_url_or_error}, doc_ids=[instance_id])
+                app_instances.update({'error': str(instance_or_error)}, doc_ids=[instance_id])
         except Exception as err:
             print("ERROR CAME", err)
 
@@ -212,7 +224,7 @@ def create_application(app_name, docker_image):
 
     dashboard_url = "/dashboard/" + str(app_name)
     # port = "Port of the hostmachine for this website"
-    app_url = str(app_name) + "." + FRONTEND_HOST
+    app_url = "http://" + str(app_name) + "." + FRONTEND_HOST
 
 
     app_object = {
@@ -482,5 +494,24 @@ def delete_application_api():
     return jsonify(success=False, error=application_or_error)
 
 
+def __init_automatic_load_balancer__():
+    ''' Automatic load balancing service! '''
+    # Keep it by default on for the app, will keep it off for other apps as such
+    if HEALTH_CHECKERS_STARTED:
+        return
+    HEALTH_CHECKERS_STARTED = True
+
+    apps = users_db.table("app_applications").all()
+
+    for app in apps:
+        print("Starting health check instances for app_db", app_db)
+    
+        # TODO, run the load_balancer.py file for this
+
+
 if __name__ == "__main__":
-    app.run(debug=True, port=4998, host="0.0.0.0")
+    inp = input("Start Automatic load balancing service[y,N]?")
+    if inp == "y" or inp == "Y" or inp.lower() == "yes":
+        __init_automatic_load_balancer__()
+
+    app.run(port=4998, host="0.0.0.0")
