@@ -4,6 +4,7 @@ import random
 from time import sleep
 from flask import Flask, jsonify, request, render_template, session, redirect
 import os
+import sys
 import requests
 import multiprocessing
 from tinydb import TinyDB, Query
@@ -19,7 +20,7 @@ users_lock = multiprocessing.Lock()
 ADMIN_USER = "admin"
 ADMIN_PASSWORD = "admin"
 MACHINES_PORT = 8080
-FRONTEND_HOST = "divyasheel.com"
+FRONTEND_HOST = "hoster.local"
 HEALTH_CHECKERS_STARTED = False
 
 
@@ -520,8 +521,13 @@ def __init_automatic_load_balancer__():
     HEALTH_CHECKERS_STARTED = True
 
     apps = users_db.table("app_applications").all()
-    # for app in apps:
-    # TODO, run the load_checker.py file for this
+    for app in apps:
+        # Run the load_checker.py file for this
+        sys.argv = ["health_checker.py", app["app_name"]]
+        script = open("health_checker.py")
+        code = script.read()
+        # set the arguments to be read by script.py
+        exec(code)
 
 
 if __name__ == "__main__":
