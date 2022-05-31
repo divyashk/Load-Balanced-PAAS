@@ -16,11 +16,11 @@ manager = multiprocessing.Manager()
 # stores the list of applications that are currently working and the values stored by them
 users_lock = multiprocessing.Lock()
 
-ADMIN_USER="admin"
+ADMIN_USER = "admin"
 ADMIN_PASSWORD = "admin"
-MACHINES_PORT=8080
-FRONTEND_HOST="divyasheel.com"
-HEALTH_CHECKERS_STARTED=False
+MACHINES_PORT = 8080
+FRONTEND_HOST = "divyasheel.com"
+HEALTH_CHECKERS_STARTED = False
 
 
 '''
@@ -57,18 +57,20 @@ def test_application(application_url):
 
     return True
 
+
 def create_instance_on_machine(app_name, docker_image, machine_url):
     '''
     The code here to create an instance on machine_url for the app_name with the docker_image link repo provided here
     @return success_status, instance_url_container_id_or_error
     '''
 
-    print("CREATE INSTANCE ON MACHINE CALLED", app_name, docker_image, machine_url)
+    print("CREATE INSTANCE ON MACHINE CALLED",
+          app_name, docker_image, machine_url)
     url = machine_url + ":" + str(MACHINES_PORT) + '/build-from-hub'
     print("URL: ", url)
 
     try:
-        res = requests.post(url , data = {"repo" : docker_image})
+        res = requests.post(url, data={"repo": docker_image})
 
         if res.ok:
             print("App creation almost successful", app_name, machine_url)
@@ -103,7 +105,7 @@ def get_best_machine_choice(app_name):
     elif len(instances) == 1:
         return machines_db.get(doc_id=2)["machine_url"]
     else:
-        rand_no = random.randint(1,2)
+        rand_no = random.randint(1, 2)
         return machines_db.get(doc_id=rand_no)["machine_url"]
 
 
@@ -118,9 +120,8 @@ def create_an_instance(app_name, docker_image=None):
 
     if docker_image is None:
         # First find the docker_image stored by reading the app_"app_name".json file
-        app_data = app_db.get(doc_id=1) # TODO change
+        app_data = app_db.get(doc_id=1)  # TODO change
         docker_image = app_data["docker_image"]
-
 
     # Also have one instance id or something to identify
     # Here we will choose the machine url
@@ -141,35 +142,45 @@ def create_an_instance(app_name, docker_image=None):
         return False, "System Could not Process, Fork Error"
 
     if fork_id > 0:
-        print("Parent process for creating instance ", app_name , " with new instance_id: ", instance_id)
+        print("Parent process for creating instance ",
+              app_name, " with new instance_id: ", instance_id)
         return True, app_name
     else:
-        print("Child process for creating instance ", app_name ," and child id is : ", os.getpid())
+        print("Child process for creating instance ",
+              app_name, " and child id is : ", os.getpid())
 
         # TODO, ensure this code does not run first than parent, else it gives error
         # TODO write the provisioning code here using the docker_image, also add the url for it
         sleep(1)
 
         # tODO, create a docker image instance on machine choosen above
-        success_status, instance_or_error = create_instance_on_machine(app_name, docker_image, machine_url)
+        success_status, instance_or_error = create_instance_on_machine(
+            app_name, docker_image, machine_url)
         print("create instance on machine returned to here")
 
         try:
             # Update the details in the database
-            app_instances.update({'provisioning': False}, doc_ids=[instance_id])
+            app_instances.update({'provisioning': False},
+                                 doc_ids=[instance_id])
             if success_status:
-                app_instances.update({'provisioned': True}, doc_ids=[instance_id])
-                instance_url = str(machine_url) + ":" + str(instance_or_error["port"])
-                app_instances.update({'instance_url': instance_url}, doc_ids=[instance_id])
-                app_instances.update({'container_id': instance_or_error["container_id"]}, doc_ids=[instance_id])
+                app_instances.update(
+                    {'provisioned': True}, doc_ids=[instance_id])
+                instance_url = str(machine_url) + ":" + \
+                    str(instance_or_error["port"])
+                app_instances.update(
+                    {'instance_url': instance_url}, doc_ids=[instance_id])
+                app_instances.update(
+                    {'container_id': instance_or_error["container_id"]}, doc_ids=[instance_id])
             else:
-                app_instances.update({'provisioned': False}, doc_ids=[instance_id])
-                app_instances.update({'error': str(instance_or_error)}, doc_ids=[instance_id])
+                app_instances.update(
+                    {'provisioned': False}, doc_ids=[instance_id])
+                app_instances.update(
+                    {'error': str(instance_or_error)}, doc_ids=[instance_id])
         except Exception as err:
             print("ERROR CAME", err)
 
-        print("Provisioned app_name", app_name ," and id is : ", instance_id)
-        exit() # End the child process here, we will contact from another API to know the status
+        print("Provisioned app_name", app_name, " and id is : ", instance_id)
+        exit()  # End the child process here, we will contact from another API to know the status
     # DONE
 
 
@@ -226,7 +237,6 @@ def create_application(app_name, docker_image):
     # port = "Port of the hostmachine for this website"
     app_url = "http://" + str(app_name) + "." + FRONTEND_HOST
 
-
     app_object = {
         "app_name": app_name,
         "docker_image": docker_image,
@@ -241,7 +251,7 @@ def create_application(app_name, docker_image):
     app_applications.insert(app_object)
     users_lock.release()
 
-    app_db = TinyDB("databases/app_" + str(app_name) + ".json" )
+    app_db = TinyDB("databases/app_" + str(app_name) + ".json")
     app_db.insert(app_object)
 
     create_an_instance(app_name, docker_image=docker_image)
@@ -281,7 +291,8 @@ def index_page():
 
     app_applications = users_db.table("app_applications")
     query = Query()
-    WORKING_APPLICATIONS = app_applications.search(query.user_id == session["user_id"])
+    WORKING_APPLICATIONS = app_applications.search(
+        query.user_id == session["user_id"])
     ''' Returns the list of working applications '''
     # return jsonify(WORKING_APPLICATIONS=str(WORKING_APPLICATIONS), WORKING_WORKERS=str(WORKING_WORKERS))
     return render_template('index.html', WORKING_APPLICATIONS=WORKING_APPLICATIONS)
@@ -291,7 +302,7 @@ def index_page():
 def admin_page():
     if "user_id" not in session:
         return redirect("/login")
-    
+
     if session["user_id"] != "admin":
         return jsonify(success=False, error="UnAuthorized Access")
 
@@ -318,7 +329,6 @@ def login_page():
                 return jsonify(success=False, error=str(req_field) + " not provided!")
             user_data[req_field] = request_body[req_field]
 
-        
         if user_data["user_id"] == ADMIN_USER:
             if user_data["user_password"] != ADMIN_PASSWORD:
                 return jsonify(success=False, error="Password does not match!")
@@ -332,7 +342,8 @@ def login_page():
         try:
             user_table = users_db.table('users')
             User = Query()
-            user_queried_data = user_table.get(User.user_id == user_data["user_id"])
+            user_queried_data = user_table.get(
+                User.user_id == user_data["user_id"])
             if user_queried_data is None:
                 return jsonify(success=False, error="UserId does not exists")
             else:
@@ -357,7 +368,7 @@ def register_page():
 
     if request.method == "POST":
         request_body = request.json
-        
+
         user_data = {}
         req_fields = ["user_name", "user_password", "user_id"]
         for req_field in req_fields:
@@ -382,10 +393,12 @@ def register_page():
 
     return render_template('register.html')
 
+
 @app.route('/logout')
 def logout_page():
     session.clear()
     return redirect('/login')
+
 
 @app.route('/dashboard/<app_name>')
 def dashboard_app_page(app_name):
@@ -407,6 +420,7 @@ def dashboard_app_page(app_name):
     except Exception as err:
         return jsonify(success=False, error=str(err))
 
+
 @app.route('/test_application')
 def test_application_api():
     if "application_url" not in request.args:
@@ -422,11 +436,12 @@ def test_application_api():
 
     return jsonify(success=True, response=response)
 
+
 @app.route('/application_exists')
 def check_application_api():
     if "app_name" not in request.args:
         return jsonify(success=False, error="app_name not provided in request.args")
-    
+
     success_status, exists = does_application_exists(request.args["app_name"])
     print("does application exists", exists)
     return jsonify(success=success_status, exists=exists)
@@ -446,7 +461,8 @@ def create_application_api():
     docker_image = request.args["docker_image"]
     app_name = request.args["app_name"]
 
-    success_status, application_or_error = create_application(app_name, docker_image)
+    success_status, application_or_error = create_application(
+        app_name, docker_image)
     if success_status:
         return jsonify(success=True, application_id=application_or_error)
 
@@ -460,7 +476,7 @@ def create_instance_api():
 
     if "app_name" not in request.args:
         return jsonify(success=False, error="app_name not provided in request.args")
-    
+
     create_an_instance(app_name=request.args["app_name"])
     return redirect("/dashboard/" + str(request.args["app_name"]))
 
@@ -476,8 +492,10 @@ def delete_an_instance_api():
     if "instance_id" not in request.args:
         return jsonify(success=False, error="instance_id not provided in request.args")
 
-    delete_instance(app_name=request.args["app_name"], instance_id=request.args["instance_id"])
+    delete_instance(
+        app_name=request.args["app_name"], instance_id=request.args["instance_id"])
     return redirect("/dashboard/" + str(request.args["app_name"]))
+
 
 @app.route('/delete_application')
 def delete_application_api():
@@ -502,11 +520,8 @@ def __init_automatic_load_balancer__():
     HEALTH_CHECKERS_STARTED = True
 
     apps = users_db.table("app_applications").all()
-
-    for app in apps:
-        print("Starting health check instances for app_db", app_db)
-    
-        # TODO, run the load_balancer.py file for this
+    # for app in apps:
+    # TODO, run the load_checker.py file for this
 
 
 if __name__ == "__main__":
