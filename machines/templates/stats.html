@@ -8,13 +8,13 @@
     <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
 </head>
 
-<body>
-    <div class="container text-center">
+<body style="background: #2b2b2b;">
+    <div class="container-fluid text-center" style="margin-top: 20px;">
         <div class="row">
-            <div class="col-sm-6">
+            <div class="col-sm-8">
                 <canvas id="myChart"></canvas>
             </div>
-            <div class="col-sm-6">
+            <div class="col-sm-4">
                 <canvas id="myChart2"></canvas>
             </div>
         </div>
@@ -22,8 +22,19 @@
 
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
     <script>
+        const plugin = {
+            id: 'custom_canvas_background_color',
+            beforeDraw: (chart) => {
+                // const ctx = chart.canvas.getContext('2d');
+                // ctx.save();
+                // ctx.globalCompositeOperation = 'destination-over';
+                // ctx.fillStyle = "#8d8d8d";
+                // ctx.fillRect(0, 0, chart.width, chart.height);
+                // ctx.restore();
+            }
+        };
+
         const data = {
             labels: [],
             datasets: [{
@@ -37,7 +48,21 @@
         const config = {
             type: 'line',
             data: data,
-            options: {}
+            options: {
+                scales: {
+                    y: {
+                        grid: {
+                            color: '#252525'
+                        }
+                    },
+                    x: {
+                        grid: {
+                            color: '#252525'
+                        }
+                    }
+                }
+            },
+            plugins: [plugin]
         };
 
         var chart = new Chart(
@@ -81,9 +106,6 @@
             config2
         );
 
-    </script>
-
-    <script>
         async function postData(url = '', data = {}) {
             // Default options are marked with *
             const response = await fetch(url, {
