@@ -1,3 +1,4 @@
 flask
 docker
 psutil
+flask_socketio

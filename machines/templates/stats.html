@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <title>Synchronized Slider</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.js"></script>
+</head>
+
+<body>
+    <div class="container text-center">
+        <div class="row">
+            <div class="col-sm-6">
+                <canvas id="myChart"></canvas>
+            </div>
+            <div class="col-sm-6">
+                <canvas id="myChart2"></canvas>
+            </div>
+        </div>
+    </div>
+
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+    <script>
+        const data = {
+            labels: [],
+            datasets: [{
+                label: 'CPU Usage',
+                backgroundColor: 'rgb(255, 99, 132)',
+                borderColor: 'rgb(255, 99, 132)',
+                data: [],
+            }]
+        };
+
+        const config = {
+            type: 'line',
+            data: data,
+            options: {}
+        };
+
+        var chart = new Chart(
+            document.getElementById('myChart'),
+            config
+        );
+
+        function addData(label, data) {
+            chart.data.labels.push(label);
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.push(data);
+            });
+            chart.update();
+        }
+
+        function removeData() {
+            chart.data.labels.shift();
+            chart.data.datasets.forEach((dataset) => {
+                dataset.data.shift();
+            });
+            chart.update();
+        }
+
+
+        const data2 = {
+            datasets: [{
+                data: [],
+                backgroundColor: ['green', 'red']
+            }],
+
+            // These labels appear in the legend and in the tooltips when hovering different arcs
+            labels: []
+        }
+        const config2 = {
+            type: 'doughnut',
+            data: data2,
+        };
+
+        var chart2 = new Chart(
+            document.getElementById('myChart2'),
+            config2
+        );
+
+    </script>
+
+    <script>
+        async function postData(url = '', data = {}) {
+            // Default options are marked with *
+            const response = await fetch(url, {
+                method: 'POST', // *GET, POST, PUT, DELETE, etc.
+                mode: 'cors', // no-cors, *cors, same-origin
+                cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+                credentials: 'same-origin', // include, *same-origin, omit
+                headers: {
+                    'Content-Type': 'application/json'
+                    // 'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                redirect: 'follow', // manual, *follow, error
+                referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+                body: JSON.stringify(data) // body data type must match "Content-Type" header
+            });
+            return response.json(); // parses JSON response into native JavaScript objects
+        }
+
+        function yourFunction(vl) {
+            postData(`/stats`, {})
+                .then(data => {
+                    console.log(vl);
+                    console.log(data);
+                    addData(vl, data.cpu_details.percent);
+
+                    chart2.data.labels = [
+                        'Available ' + data.memory_details.percent + '%',
+                        'Used' + (100 - data.memory_details.percent) + "%",
+                    ]
+
+                    chart2.data.datasets.forEach((dataset) => {
+                        dataset.data = [data.memory_details.percent, 100 - data.memory_details.percent]
+                    });
+                    chart2.update();
+
+                }).catch(err => {
+                    console.log("Something went wrong" + err);
+                });
+
+            if (vl > 20) {
+                removeData();
+            }
+
+            setTimeout(function () { yourFunction(vl + 1) }, 1000);
+        }
+
+        yourFunction(0);
+
+
+    </script>
+</body>
+
+</html>

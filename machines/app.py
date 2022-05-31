@@ -1,3 +1,4 @@
+from time import sleep
 from flask import Flask, render_template, jsonify, request , redirect , url_for, session
 from werkzeug.utils import secure_filename
 import docker
@@ -5,14 +6,21 @@ from zipfile import ZipFile
 from socket import socket
 import subprocess
 import os
+from stats import get_cpu_details, get_memory_details
+from flask_socketio import SocketIO, emit
+
 
 UPLOAD_FOLDER = 'zipfiles'
 ALLOWED_EXTENSIONS = {'txt', 'pdf', 'png', 'jpg', 'jpeg', 'gif' , 'zip'}
+CONNECTED_CLIENTS = []
+
 
 client = docker.from_env()
 app = Flask(__name__)
 app.config["DEBUG"] = True
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+socketio = SocketIO(app)
+
 
 def allowed_file(filename):
     return '.' in filename and \
@@ -28,6 +36,14 @@ def get_freeport():
 @app.route('/')
 def index_page():
     return render_template("index.html")
+
+
+@app.route('/stats', methods=["GET", "POST"])
+def stats_page():
+    if request.method == "POST":
+        return jsonify(cpu_details=get_cpu_details(), memory_details=get_memory_details())
+
+    return render_template('stats.html')
 
 
 @app.route('/runcmd', methods=["POST"])

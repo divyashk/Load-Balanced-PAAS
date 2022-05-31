@@ -282,9 +282,8 @@ def admin_page():
     if session["user_id"] != "admin":
         return jsonify(success=False, error="UnAuthorized Access")
 
-    MACHINES = [
-        {"machine_url": "http://localhost:5000"}
-    ]
+    machines_db = TinyDB("databases/machines.json")
+    MACHINES = machines_db.all()
 
     app_applications = users_db.table("app_applications")
     WORKING_APPLICATIONS = app_applications.all()

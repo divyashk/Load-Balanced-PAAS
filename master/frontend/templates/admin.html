@@ -5,23 +5,28 @@
 {% endblock %}
 {% block body %}
 
-<h3> Admin Portal! </h3>
+<h3 class="center" style="color: #fed356; margin: 20px 0;"> Admin Portal! </h3>
 
-<div class="machines">
+<div class="main-content">
+    <div class="machines">
+        <h4> Available Machines </h4>
 
-    {% for machine in MACHINES %}
-    <a href="{{ machine.machine_url }}"> {{ machine.machine_url }} </a>
-    <!-- <div class="machine-block">
-        <iframe width="100%" height="600px" src="{{ machine.machine_url }}" title="{{ machine.machine_url }}">
-        </iframe>
-    </div> -->
-    {% endfor %}
+        {% for machine in MACHINES %}
+        <div style="padding: 4px;">
+            <a href="{{ machine.machine_url }}"> {{ machine.machine_url }} </a>
+        </div>
+        <!-- <div class="machine-block">
+            <iframe width="100%" height="600px" src="{{ machine.machine_url }}" title="{{ machine.machine_url }}">
+            </iframe>
+        </div> -->
+        {% endfor %}
+    </div>
 </div>
 
-<div class="websites">
-    <h4> Our currently hosted websites </h4>
+<div class="websites container-fluid">
+    <h4 class="center" style="margin: 64px 0 12px 0;"> Our currently hosted websites </h4>
 
-    <table>
+    <table class="table table-striped table-dark">
         <thead>
             <td> app_name </td>
             <td> docker_image </td>
