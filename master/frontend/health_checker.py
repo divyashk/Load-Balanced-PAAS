@@ -38,7 +38,7 @@ def start_health_check_app():
     app_db = TinyDB("databases/app_" + APP_NAME + ".json")
     instances = app_db.table("instances").all()
 
-    
+
     if len(instances) == 1:
         instance_id = instances[0]["instance_id"]
         machine_url = instances[0]["machine_url"]
@@ -50,7 +50,7 @@ def start_health_check_app():
 
         # Start a new thread for keep checking the instance
         # Right now it will work only considering two machines
-
+    # Left TODO, will not be doing this idea forward
 
 
 @app.route('/')
