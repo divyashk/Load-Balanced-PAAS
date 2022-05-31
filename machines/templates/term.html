@@ -49,9 +49,15 @@
             }
 
             if (command == "cd") {
-                cwd += parameters[0] + "/";
-                term.output();
-                return;
+                if (parameters.length > 0) {
+                    cwd += parameters[0] + "/";
+                    term.output();
+                    return;
+                } else {
+                    cwd = "";
+                    term.output();
+                    return;
+                }
             }
 
             term.idle();
@@ -75,7 +81,7 @@
             }
 
             let commandString = command;
-            for(par of parameters) {
+            for (par of parameters) {
                 commandString += " " + par;
             }
 

@@ -19,6 +19,8 @@ users_lock = multiprocessing.Lock()
 ADMIN_USER="admin"
 ADMIN_PASSWORD = "admin"
 MACHINES_PORT=8080
+FRONTEND_HOST="divyasheel.com"
+
 
 '''
 Database schema and structure
@@ -89,7 +91,7 @@ def get_best_machine_choice(app_name):
     '''
     machines_db = TinyDB("databases/machines.json")
     rand_no = random.randint(1,2)
-    machine_url = machines_db.get(doc_id=1)["machine_url"]
+    machine_url = machines_db.get(doc_id=rand_no)["machine_url"]
 
     return machine_url
 
@@ -208,11 +210,9 @@ def create_application(app_name, docker_image):
     # First update in the database, add dashboard link and then create first instance
     # Find a port that will be used by this application
 
-
-    #TODO @PRANSHU, DIVYASHEEL
     dashboard_url = "/dashboard/" + str(app_name)
-    port = "Port of the hostmachine for this website"
-    app_url = str(app_name) + ".oursite.com"
+    # port = "Port of the hostmachine for this website"
+    app_url = str(app_name) + "." + FRONTEND_HOST
 
 
     app_object = {
@@ -220,7 +220,7 @@ def create_application(app_name, docker_image):
         "docker_image": docker_image,
         "dashboard_url": dashboard_url,
         "app_url": app_url,
-        "port": port,
+        # "port": port,
         "user_id": session["user_id"]
     }
 
