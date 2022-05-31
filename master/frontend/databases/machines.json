@@ -1,1 +1,4 @@
-{"_default": {"1": {"machine_url": "http://192.168.196.125"}, "2": {"machine_url": "http://192.168.196.27"}}}
+{"_default": {
+    "1": {"machine_url": "http://192.168.196.125", "password": "admin"},
+    "2": {"machine_url": "http://192.168.196.27", "password": "admin"}
+}}

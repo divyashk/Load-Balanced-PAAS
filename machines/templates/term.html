@@ -38,11 +38,19 @@
             separator: '$',
         });
 
+        let cwd = "";
+
         term.onInput((command, parameters) => {
             console.log('PRIYAM onInput', command, parameters);
 
             if (command == "clear") {
                 term.clear();
+                return;
+            }
+
+            if (command == "cd") {
+                cwd += parameters[0] + "/";
+                term.output();
                 return;
             }
 
@@ -71,7 +79,7 @@
                 commandString += " " + par;
             }
 
-            postData('/runcmd', { cmd: commandString })
+            postData('/runcmd', { cmd: commandString, cwd: cwd })
                 .then(data => {
                     const output1 = data.output;
                     outputs = output1.split('\n')

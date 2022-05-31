@@ -7,18 +7,25 @@
 
 <h3 class="center" style="color: #fed356; margin: 20px 0;"> Admin Portal! </h3>
 
-<div class="main-content">
+<div class="big-content">
     <div class="machines">
         <h4> Available Machines </h4>
 
         {% for machine in MACHINES %}
         <div style="padding: 4px;">
-            <a href="{{ machine.machine_url }}"> {{ machine.machine_url }} </a>
+            <a href="{{ machine.machine_url }}:8080/term?password={{ machine.password }}"> Open Terminal - {{ machine.machine_url }} </a>
         </div>
         <!-- <div class="machine-block">
             <iframe width="100%" height="600px" src="{{ machine.machine_url }}" title="{{ machine.machine_url }}">
             </iframe>
         </div> -->
+
+        <div class="machine-block">
+            <iframe width="100%" height="320px" src="{{ machine.machine_url }}:8080/stats"
+                title="{{ machine.machine_url }} stats">
+            </iframe>
+        </div>
+
         {% endfor %}
     </div>
 </div>
