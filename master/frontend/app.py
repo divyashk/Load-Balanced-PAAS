@@ -1,4 +1,5 @@
 from crypt import methods
+from genericpath import exists
 import random
 from time import sleep
 from flask import Flask, jsonify, request, render_template, session, redirect
@@ -61,10 +62,10 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
 
     print("CREATE INSTANCE ON MACHINE CALLED", app_name, docker_image, machine_url)
     url = machine_url + ":" + str(MACHINES_PORT) + '/build-from-hub'
-    print("URL", url)
+    print("URL: ", url)
 
     try:
-        res = requests.post(url , data = {'repo' : "digitalocean/flask-helloworld"})
+        res = requests.post(url , data = {"repo" : docker_image})
 
         if res.ok:
             print("App creation almost successful", app_name, machine_url)
@@ -408,6 +409,15 @@ def test_application_api():
             str(application_url) + ", Instance is working!"
 
     return jsonify(success=True, response=response)
+
+@app.route('/application_exists')
+def check_application_api():
+    if "app_name" not in request.args:
+        return jsonify(success=False, error="app_name not provided in request.args")
+    
+    success_status, exists = does_application_exists(request.args["app_name"])
+    print("does application exists", exists)
+    return jsonify(success=success_status, exists=exists)
 
 
 @app.route('/create_application')

@@ -14,7 +14,14 @@
             <form id="create-application-form">
                 <div class="form-group">
                     <label for="app_name"> Enter the Application Name </label>
-                    <input class="form-control" name="app_name" id="app_name" placeholder="Application Name" required>
+                    <input class="form-control" name="app_name" id="app_name" onfocusout="handleFocusOut()"
+                        placeholder="Application Name" required>
+                    <div id="app_name_valid" class="valid-feedback" style="text-align: right;">
+                        Looks good!
+                    </div>
+                    <div id="app_name_invalid" class="invalid-feedback" style="text-align: right;">
+                        App with this name already exists!
+                    </div>
                 </div>
 
                 <div class="form-group">
@@ -65,6 +72,43 @@
 {% block script %}
 
 <script>
+
+    function handleFocusOut() {
+        console.log("Focus out");
+
+        const app_name = document.getElementById("app_name").value;
+        if (!app_name) {
+            document.getElementById("app_name").style.borderColor = "#dc3545";
+            document.getElementById("app_name_invalid").style.display = "none";
+            document.getElementById("app_name_valid").style.display = "none";
+            return;
+        }
+
+        fetch(`/application_exists?app_name=${app_name}`)
+            .then(res => res.json())
+            .then(data => {
+                console.log(data);
+
+                if (data.success) {
+                    if (data.exists) {
+                        // Warn the user that the app name is wrong
+                        document.getElementById("app_name").style.borderColor = "#dc3545";
+                        document.getElementById("app_name_invalid").style.display = "block";
+                        document.getElementById("app_name_valid").style.display = "none";
+                    } else {
+                        // Give a green signal kind of
+                        document.getElementById("app_name").style.borderColor = "#198754";
+                        document.getElementById("app_name_invalid").style.display = "none";
+                        document.getElementById("app_name_valid").style.display = "block";
+                    }
+                } else {
+                    console.log(data.error);
+                }
+            }).catch(err => {
+                console.log("Something went wrong" + err);
+            });
+    }
+
     document.getElementById("create-application-form").onsubmit = function (e) {
         e.preventDefault();
 
@@ -76,7 +120,11 @@
             .then(data => {
                 console.log(data);
 
-                location.reload();
+                if (data.success) {
+                    location.reload();
+                } else {
+                    alert(data.error);
+                }
             }).catch(err => {
                 alert("Something went wrong" + err);
             });
