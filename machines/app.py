@@ -87,11 +87,12 @@ def run_cmd_on_machine():
 def build_from_hub():
     # add current user to group docker, and also run "newgrp docker"
     repo = request.form['repo']
+    dockerport = request.form['port']
     print(repo)
     image = client.images.pull(repo)
     freeport = get_freeport()
     container = client.containers.run(
-        repo + ':latest', ports={5000: freeport}, detach=True)
+        repo + ':latest', ports={dockerport: freeport}, detach=True)
     print(container)
     print(freeport)
     return jsonify(success=True, port=freeport , container_id=container.id)
