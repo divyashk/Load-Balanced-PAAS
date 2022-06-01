@@ -621,4 +621,4 @@ if __name__ == "__main__":
     # if inp == "y" or inp == "Y" or inp.lower() == "yes":
     #     __init_automatic_load_balancer__()
     # else:
-    app.run(port=5011, host="0.0.0.0")
+    app.run(port=4998, host="0.0.0.0")
