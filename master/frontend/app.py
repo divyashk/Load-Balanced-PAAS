@@ -40,6 +40,43 @@ the form of docker_details : { keys : values }
 Will have a seprate json file for each app, that stores its specific app information
 '''
 
+def reload_nginx():
+    try:
+        os.system("sudo ./reload_nginx.sh")
+
+    except:
+        print("Unable to reload nginx!");
+
+    else:
+        print("Nginx realoded successfully!");
+    
+
+def create_config_file(subdomain, port):
+    print("creating the config file now")
+    file_name = "/etc/nginx/sites-enabled/" +  subdomain + ".conf"
+    try:
+        f = open(file_name, "w")    
+    except:
+        print("Unable to open file for writing at /etc/nginx/sites-enabled")
+    else:
+        configuration = '''server {{
+        listen 80;
+        server_name {0}.hoster.local;
+
+        location / {{
+                proxy_pass http://192.168.196.125:{1};
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+                proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+                proxy_set_header X-Forwarded-Proto $scheme;
+        }}
+
+}}
+        '''.format(subdomain, port);
+        f.write(configuration);
+        f.close();
+
+        reload_nginx();
 
 def test_application(application_url):
     ''' Makes a get request to the application url, and return True if it is working '''
@@ -70,14 +107,19 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
     url = machine_url + ":" + str(MACHINES_PORT) + '/build-from-hub'
     print("URL: ", url)
 
+    TESTING = True
+    if TESTING:
+        print("TESTING SUBDOMAIN")
+        return True, {"port": "7777", "container_id": "testin-container"}
+
     try:
         res = requests.post(url, data={"repo": docker_image})
-
+        
         if res.ok:
             print("App creation almost successful", app_name, machine_url)
             success_status = res.json()["success"]
             if success_status:
-                print("INSTANCE CREATION ON PORT", res.json()["port"])
+                print("INSTANCE CREATION ON PORT", res.json()["port"])                   
                 return True, {"port": res.json()["port"], "container_id": res.json()["container_id"]}
             else:
                 print("INSTANCE CREATION Failed", res.json()["port"])
@@ -86,6 +128,7 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
             print("Request failed or something!")
             return False, "ERROR"
     except Exception as err:
+        print("Request failed to machine: ", machine_url, " err: ", err)
         return False, str(err)
 
 
@@ -150,15 +193,15 @@ def create_an_instance(app_name, docker_image=None):
         print("Child process for creating instance ",
               app_name, " and child id is : ", os.getpid())
 
-        # TODO, ensure this code does not run first than parent, else it gives error
-        # TODO write the provisioning code here using the docker_image, also add the url for it
+        # Ensure this code does not run first than parent, else it gives error
+        # Wrote the provisioning code here using the docker_image, also add the url for it
         sleep(1)
 
         # tODO, create a docker image instance on machine choosen above
         success_status, instance_or_error = create_instance_on_machine(
             app_name, docker_image, machine_url)
         print("create instance on machine returned to here")
-
+        
         try:
             # Update the details in the database
             app_instances.update({'provisioning': False},
@@ -168,17 +211,24 @@ def create_an_instance(app_name, docker_image=None):
                     {'provisioned': True}, doc_ids=[instance_id])
                 instance_url = str(machine_url) + ":" + \
                     str(instance_or_error["port"])
+
+                # Create 
+                create_config_file(app_name, str(instance_or_error["port"]))
+
                 app_instances.update(
                     {'instance_url': instance_url}, doc_ids=[instance_id])
                 app_instances.update(
                     {'container_id': instance_or_error["container_id"]}, doc_ids=[instance_id])
             else:
+                print("Instance Creation Failed! Request Error most probably, success status False")
                 app_instances.update(
                     {'provisioned': False}, doc_ids=[instance_id])
                 app_instances.update(
                     {'error': str(instance_or_error)}, doc_ids=[instance_id])
         except Exception as err:
-            print("ERROR CAME", err)
+            app_instances.update({'provisioning': False},
+                                 doc_ids=[instance_id])
+            print("ERROR CAME", str(err))
 
         print("Provisioned app_name", app_name, " and id is : ", instance_id)
         exit()  # End the child process here, we will contact from another API to know the status
