@@ -566,23 +566,59 @@ def delete_application_api():
 def __init_automatic_load_balancer__():
     ''' Automatic load balancing service! '''
     # Keep it by default on for the app, will keep it off for other apps as such
+    global HEALTH_CHECKERS_STARTED
     if HEALTH_CHECKERS_STARTED:
         return
     HEALTH_CHECKERS_STARTED = True
 
-    apps = users_db.table("app_applications").all()
-    for app in apps:
-        # Run the load_checker.py file for this
-        sys.argv = ["health_checker.py", app["app_name"]]
-        script = open("health_checker.py")
-        code = script.read()
-        # set the arguments to be read by script.py
-        exec(code)
+    # try:
+    #     fork_id = os.fork()
+    # except:
+    #     print("Fork failed")
+    #     app.run(port=5011, host="0.0.0.0")
+    #     return
+
+    # if fork_id > 0:
+    #     try:
+    #         app.run(port=5012, host="0.0.0.0")
+    #     except KeyboardInterrupt:
+    #         print("User aborted.")
+    #         exit()
+    # else:
+        # apps = users_db.table("app_applications").all()
+        # for app_data in apps:
+        #     if "health_check" in app_data and app_data["health_check"] == True:
+
+        #         try:
+        #             fork2 = os.fork()
+
+        #             if fork2 > 0:
+        #                 continue
+        #             else:
+        #                 print("Health check started for ", app_data["app_name"])
+        #                 # Run the load_checker.py file for this
+
+        #                 try:
+        #                     # sys.argv = ["health_checker.py", app_data["app_name"]]
+        #                     # script = open("health_checker.py")
+        #                     # code = script.read()
+        #                     # # set the arguments to be read by script.py
+        #                     # exec(code)
+        #                     print("Check")
+        #                 except Exception as err:
+        #                     print("Exception came for app_name", app_data["app_name"], " err:", str(err))
+        #                 exit()
+
+
+        #         except Exception as err:
+        #             print("Fork failed", err)
+        # exit()
+        # print("Exit")
 
 
 if __name__ == "__main__":
-    inp = input("Start Automatic load balancing service[y,N]?")
-    if inp == "y" or inp == "Y" or inp.lower() == "yes":
-        __init_automatic_load_balancer__()
-
-    app.run(port=4998, host="0.0.0.0")
+    # inp = input("Start Automatic health checking service[y,N]?")
+    # if inp == "y" or inp == "Y" or inp.lower() == "yes":
+    #     __init_automatic_load_balancer__()
+    # else:
+    app.run(port=5011, host="0.0.0.0")
