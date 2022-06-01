@@ -51,7 +51,7 @@ def reload_nginx():
         print("Nginx realoded successfully!");
     
 
-def create_config_file(subdomain, port):
+def create_config_file(subdomain, url):
     print("creating the config file now")
     file_name = "/etc/nginx/sites-enabled/" +  subdomain + ".conf"
     try:
@@ -64,7 +64,7 @@ def create_config_file(subdomain, port):
         server_name {0}.hoster.local;
 
         location / {{
-                proxy_pass http://192.168.196.125:{1};
+                proxy_pass {1};
                 proxy_set_header Host $host;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
@@ -72,7 +72,7 @@ def create_config_file(subdomain, port):
         }}
 
 }}
-        '''.format(subdomain, port);
+        '''.format(subdomain, url);
         f.write(configuration);
         f.close();
 
@@ -107,10 +107,10 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
     url = machine_url + ":" + str(MACHINES_PORT) + '/build-from-hub'
     print("URL: ", url)
 
-    TESTING = True
-    if TESTING:
-        print("TESTING SUBDOMAIN")
-        return True, {"port": "7777", "container_id": "testin-container"}
+    # TESTING = True
+    # if TESTING:
+    #     print("TESTING SUBDOMAIN")
+    #     return True, {"port": "7777", "container_id": "testin-container"}
 
     try:
         res = requests.post(url, data={"repo": docker_image , "port" : 8080})
@@ -213,7 +213,7 @@ def create_an_instance(app_name, docker_image=None):
                     str(instance_or_error["port"])
 
                 # Create 
-                create_config_file(app_name, str(instance_or_error["port"]))
+                create_config_file(app_name, instance_url)
 
                 app_instances.update(
                     {'instance_url': instance_url}, doc_ids=[instance_id])
