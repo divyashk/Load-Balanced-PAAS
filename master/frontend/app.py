@@ -113,7 +113,7 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
         return True, {"port": "7777", "container_id": "testin-container"}
 
     try:
-        res = requests.post(url, data={"repo": docker_image})
+        res = requests.post(url, data={"repo": docker_image , "port" : 8080})
         
         if res.ok:
             print("App creation almost successful", app_name, machine_url)
