@@ -1,5 +1,6 @@
 from time import sleep
-from flask import Flask, render_template, jsonify, request, redirect, url_for, session
+from flask import Flask
+from flask import render_template, jsonify, request , redirect , url_for, session
 from werkzeug.utils import secure_filename
 import docker
 from zipfile import ZipFile
@@ -93,7 +94,7 @@ def build_from_hub():
         repo + ':latest', ports={5000: freeport}, detach=True)
     print(container)
     print(freeport)
-    return jsonify(success=True, port=freeport)
+    return jsonify(success=True, port=freeport , container_id=container.id)
 
 
 @app.route('/build-from-zip', methods=['POST'])
