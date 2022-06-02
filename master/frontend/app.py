@@ -78,6 +78,34 @@ def create_config_file(subdomain, url):
 
         reload_nginx();
 
+
+def create_load_balanced_config(subdomain, url1, url2):
+    print("LOAD BALANCE CONFIG")
+    file_name = "/etc/nginx/sites-enabled/" +  subdomain + ".conf"
+    f = open(file_name, "w")
+
+    configuration ='''upstream {0}_nginx {{
+    server {1};
+    server {2};
+}}
+# This server accepts all traffic to port 80 and passes it to the upstream.
+server {{
+        listen 80;
+        server_name {0}.hoster.local;
+        location / {{
+            proxy_pass http://{0}_nginx;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+        }}
+}}
+    '''.format(subdomain, url1, url2);
+    f.write(configuration);
+    f.close();
+
+    reload_nginx();
+
 def test_application(application_url):
     ''' Makes a get request to the application url, and return True if it is working '''
     print("Testing application url: ", application_url)
@@ -219,8 +247,14 @@ def create_an_instance(app_name, docker_image=None, docker_port=None):
                 instance_url = str(machine_url) + ":" + \
                     str(instance_or_error["port"])
 
-                # Create 
-                create_config_file(app_name, instance_url)
+                # Create
+                app_instances_data = app_instances.all()
+                # fetch the instances from the app_name
+                print("LENGTH OF app_instance", app_instances_data)
+                if (len(app_instances_data) == 1):
+                    create_config_file(app_name, instance_url)
+                else:
+                    create_load_balanced_config(app_name, app_instances_data[0]["instance_url"], instance_url)
 
                 app_instances.update(
                     {'instance_url': instance_url}, doc_ids=[instance_id])
