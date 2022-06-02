@@ -121,7 +121,7 @@
                 console.log(data);
 
                 if (data.success) {
-                    location.reload();
+                    window.location.href = `/dashboard/${app_name}`;
                 } else {
                     alert(data.error);
                 }

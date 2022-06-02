@@ -140,6 +140,7 @@ def get_best_machine_choice(app_name):
 
     # Logic to find the best machine choice
     # NEED to update if we use more than 2
+    # Random machine choosing
 
     app_db = TinyDB("databases/app_" + app_name + ".json")
     app_table = app_db.table("instances")
@@ -241,8 +242,6 @@ def delete_instance(app_name, instance_id):
     instance_table = app_db.table("instances")
     print("DELETE INSTANCE ID: ", instance_id)
     instance_table.remove(doc_ids=[int(instance_id)])
-
-    # TODO remove from the server side also
 
 
 def does_application_exists(app_name):

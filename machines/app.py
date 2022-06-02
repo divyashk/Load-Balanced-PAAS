@@ -85,6 +85,9 @@ def run_cmd_on_machine():
 
 @app.route('/build-from-hub', methods=['POST'])
 def build_from_hub():
+
+    return jsonify(success=True, port="4998", container_id="a0b0f556aa")
+
     # add current user to group docker, and also run "newgrp docker"
     repo = request.form['repo']
     dockerport = request.form['port']

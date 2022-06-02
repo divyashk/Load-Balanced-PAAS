@@ -129,8 +129,13 @@
                 .then(data => {
                     console.log(vl);
                     console.log(data);
+
+                    // data : { cpu_details: { percent: "CPU Usage %" }, memory_details: { percent: "Memory usage % "} }
+
+                    // Add the values in the line chart
                     addData(vl, data.cpu_details.percent);
 
+                    // Add the values in the pie chart
                     chart2.data.labels = [
                         'Available ' + data.memory_details.percent + '%',
                         'Used' + (100 - data.memory_details.percent) + "%",
