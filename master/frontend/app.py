@@ -116,6 +116,7 @@ def create_instance_on_machine(app_name, docker_image, machine_url, docker_port)
     #     return True, {"port": "7777", "container_id": "testin-container"}
 
     try:
+        print("Making a POST Request to the machine: ", machine_url)
         res = requests.post(url, data={"repo": docker_image , "port" : docker_port})
         
         if res.ok:
@@ -129,7 +130,7 @@ def create_instance_on_machine(app_name, docker_image, machine_url, docker_port)
                 return True, {"port": res.json()["port"], "container_id": res.json()["container_id"]}
         else:
             print("Request failed or something!")
-            return False, "ERROR"
+            return False, res.text
     except Exception as err:
         print("Request failed to machine: ", machine_url, " err: ", err)
         return False, str(err)
@@ -295,6 +296,7 @@ def create_application(app_name, docker_image, docker_port):
     app_object = {
         "app_name": app_name,
         "docker_image": docker_image,
+        "docker_port": docker_port,
         "dashboard_url": dashboard_url,
         "app_url": app_url,
         # "port": port,
