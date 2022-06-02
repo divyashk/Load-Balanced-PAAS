@@ -96,7 +96,7 @@ def test_application(application_url):
     return True
 
 
-def create_instance_on_machine(app_name, docker_image, machine_url):
+def create_instance_on_machine(app_name, docker_image, machine_url, docker_port):
     '''
     The code here to create an instance on machine_url for the app_name with the docker_image link repo provided here
     @return success_status, instance_url_container_id_or_error
@@ -107,13 +107,16 @@ def create_instance_on_machine(app_name, docker_image, machine_url):
     url = machine_url + ":" + str(MACHINES_PORT) + '/build-from-hub'
     print("URL: ", url)
 
+    if docker_port == None:
+        docker_port = 5000
+
     # TESTING = True
     # if TESTING:
     #     print("TESTING SUBDOMAIN")
     #     return True, {"port": "7777", "container_id": "testin-container"}
 
     try:
-        res = requests.post(url, data={"repo": docker_image , "port" : 8080})
+        res = requests.post(url, data={"repo": docker_image , "port" : docker_port})
         
         if res.ok:
             print("App creation almost successful", app_name, machine_url)
@@ -154,7 +157,7 @@ def get_best_machine_choice(app_name):
         return machines_db.get(doc_id=rand_no)["machine_url"]
 
 
-def create_an_instance(app_name, docker_image=None):
+def create_an_instance(app_name, docker_image=None, docker_port=None):
     '''
     Takes a docker image as input and creates a container based on that
     @params: docker image
@@ -165,8 +168,9 @@ def create_an_instance(app_name, docker_image=None):
 
     if docker_image is None:
         # First find the docker_image stored by reading the app_"app_name".json file
-        app_data = app_db.get(doc_id=1)  # TODO change
+        app_data = app_db.get(doc_id=1)
         docker_image = app_data["docker_image"]
+        docker_port = app_data["docker_port"]
 
     # Also have one instance id or something to identify
     # Here we will choose the machine url
@@ -177,6 +181,7 @@ def create_an_instance(app_name, docker_image=None):
         "provisioned": False,
         "provisioning": True,
         "docker_image": docker_image,
+        "docker_port": docker_port,
         "user_id": session["user_id"],
         "machine_url": machine_url
     })
@@ -200,7 +205,7 @@ def create_an_instance(app_name, docker_image=None):
 
         # tODO, create a docker image instance on machine choosen above
         success_status, instance_or_error = create_instance_on_machine(
-            app_name, docker_image, machine_url)
+            app_name, docker_image, machine_url, docker_port)
         print("create instance on machine returned to here")
         
         try:
@@ -261,7 +266,7 @@ def does_application_exists(app_name):
         return False, "Could not scan applications"
 
 
-def create_application(app_name, docker_image):
+def create_application(app_name, docker_image, docker_port):
     # 1. Will Start a container from the given docker image
     # 2. Update WORKING_APPLICATIONS
     # Returns a tuple(Success_Status, application_id or error)
@@ -304,7 +309,7 @@ def create_application(app_name, docker_image):
     app_db = TinyDB("databases/app_" + str(app_name) + ".json")
     app_db.insert(app_object)
 
-    create_an_instance(app_name, docker_image=docker_image)
+    create_an_instance(app_name, docker_image=docker_image, docker_port=docker_port)
 
     print("Created application with new application id", app_name)
     return True, app_name
@@ -501,18 +506,17 @@ def check_application_api():
 def create_application_api():
     # Make a request to the resource manager to create an application
     # and then start the worker proxy that looks over to that application
-    # TODO, provide the docker image also here
-    if "docker_image" not in request.args:
-        return jsonify(success=False, error="docker_image not provided in request.args")
-
-    if "app_name" not in request.args:
-        return jsonify(success=False, error="app_name not provided in request.args")
+    request_args = ["app_name", "docker_image", "docker_port"]
+    for request_arg in request_args:
+        if request_arg not in request.args:
+            return jsonify(success=False, error="docker_image not provided in request.args")
 
     docker_image = request.args["docker_image"]
     app_name = request.args["app_name"]
+    docker_port = request.args["docker_port"]
 
     success_status, application_or_error = create_application(
-        app_name, docker_image)
+        app_name, docker_image, docker_port)
     if success_status:
         return jsonify(success=True, application_id=application_or_error)
 

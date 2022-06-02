@@ -33,6 +33,14 @@
                         required>
                 </div>
                 <div class="form-group">
+                    <div class="row">
+                        <label for="docker_port"> Enter the Docker port <i class="fa fa-link"
+                                aria-hidden="true"></i> </label>
+                    </div>
+                    <input class="form-control" name="docker_port" type="number" id="docker_port" placeholder="Docker Hub Link"
+                        required>
+                </div>
+                <div class="form-group">
                     <button class="btn btn-success full-size" type="submit"> CREATE </button>
                 </div>
             </form>
@@ -49,6 +57,7 @@
         <thead>
             <td> app_name </td>
             <td> docker_image </td>
+            <td> docker port </td>
             <td> APP URL </td>
             <td> DashBoard </td>
         </thead>
@@ -57,6 +66,7 @@
             <tr>
                 <td> {{ app.app_name }} </td>
                 <td> {{ app.docker_image }} </td>
+                <td> {{ app.docker_port }} </td>
                 <td> {{ app.app_url }} </td>
                 <td>
                     <a href="{{ app.dashboard_url }}"> {{ app.dashboard_url }} </a>
@@ -114,8 +124,9 @@
 
         const app_name = document.getElementById("app_name").value;
         const docker_image = document.getElementById("docker_image").value;
+        const docker_port = document.getElementById("docker_port").value;
 
-        fetch(`/create_application?app_name=${app_name}&docker_image=${docker_image}`)
+        fetch(`/create_application?app_name=${app_name}&docker_image=${docker_image}&docker_port=${docker_port}`)
             .then(res => res.json())
             .then(data => {
                 console.log(data);
