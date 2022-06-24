@@ -4,7 +4,7 @@ import os
 import requests
 import multiprocessing
 from tinydb import TinyDB
-from app import create_an_instance()
+from app import create_an_instance
 
 app = Flask(__name__)
 manager = multiprocessing.Manager()
@@ -19,6 +19,8 @@ PERIODIC_INTERVAL = 5 # The seconds interval on which we will keep checking if t
 
 def test_instance(instance_url):
     ''' Makes a get request to the instance url, and return True if it is working '''
+    # Heart Beat Design Pattern
+
     print("Testing instance url: ", instance_url)
 
     try:
@@ -69,6 +71,8 @@ def delete_instance(instance_id):
 def handle_instance_failure(app_name, instance_id):
     # check if it is in the working instances or not
     # If it is, there is a failure
+    # Let it crash design pattern
+
     global WORKING_WORKERS
     global lock
 
@@ -78,7 +82,7 @@ def handle_instance_failure(app_name, instance_id):
     lock.release()
 
     # Create a new instance by requesting the own server only
-    create_instance(app_name)
+    # create_instance(app_name)
     print("App instane successfully created")
 
 
